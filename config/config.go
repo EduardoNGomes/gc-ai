@@ -19,6 +19,21 @@ func (c *Config) isEmpty() bool {
 func (c *Config) getOpenIAKey() string {
 	return c.open_ai_key
 }
+
+func (c *Config) setOpenIAKey(v string) {
+	c.open_ai_key = v
+}
+
 func (c *Config) getGeminiKey() string {
 	return c.gemini_key
+}
+
+func (c *Config) setGeminiKey(v string) {
+	c.gemini_key = v
+}
+
+func (c *Config) loadEnvs() {
+	if err := env.Load(".env"); err != nil {
+		panic(err)
+	}
 }
