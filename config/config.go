@@ -1,5 +1,9 @@
 package config
 
+import (
+	"github.com/gofor-little/env"
+)
+
 type Config struct {
 	open_ai_key string
 	gemini_key  string
@@ -33,7 +37,24 @@ func (c *Config) setGeminiKey(v string) {
 }
 
 func (c *Config) loadEnvs() {
-	if err := env.Load(".env"); err != nil {
+	if err := env.Load("../.env"); err != nil {
 		panic(err)
 	}
+
+	o, err := env.MustGet("OPEN_AI")
+
+	if err != nil {
+		env.Write("OPEN_AI", "", ".env", true)
+	}
+
+	c.setOpenIAKey(o)
+
+	g, err := env.MustGet("GEMINI")
+
+	if err != nil {
+		env.Write("GEMINI", "", ".env", true)
+	}
+
+	c.setGeminiKey(g)
+
 }
