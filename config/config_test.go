@@ -1,6 +1,8 @@
 package config
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"testing"
 )
@@ -21,7 +23,7 @@ func TestConfig(t *testing.T) {
 		key := "key"
 		conf := &Config{open_ai_key: key, gemini_key: ""}
 
-		r := conf.getOpenIAKey()
+		r := conf.getOpenAIKey()
 
 		checkAssert(t, r, key)
 
@@ -33,7 +35,7 @@ func TestConfig(t *testing.T) {
 	t.Run("Should set Gemini Key", func(t *testing.T) {
 		key := "key"
 
-		conf := &Config{}
+		conf := NewConfig()
 
 		conf.setGeminiKey(key)
 
@@ -46,18 +48,18 @@ func TestConfig(t *testing.T) {
 	t.Run("Should set OpenAi Key", func(t *testing.T) {
 		key := "key"
 
-		conf := &Config{}
+		conf := NewConfig()
 
-		conf.setOpenIAKey(key)
+		conf.setOpenAIKey(key)
 
-		r := conf.getOpenIAKey()
+		r := conf.getOpenAIKey()
 
 		checkAssert(t, r, key)
 
 	})
 
 	t.Run("Should return empty config", func(t *testing.T) {
-		conf := &Config{}
+		conf := NewConfig()
 
 		r := conf.isEmpty()
 
@@ -67,7 +69,7 @@ func TestConfig(t *testing.T) {
 	})
 
 	t.Run("Should load envs with empty values", func(t *testing.T) {
-		conf := &Config{}
+		conf := NewConfig()
 
 		conf.loadEnvs()
 		r := conf.getGeminiKey()
@@ -79,12 +81,27 @@ func TestConfig(t *testing.T) {
 	t.Run("Should load envs with values", func(t *testing.T) {
 		value := "Key"
 		os.Setenv("OPEN_AI", value)
-		conf := &Config{}
+
+		conf := NewConfig()
 
 		conf.loadEnvs()
-		r := conf.getOpenIAKey()
+		r := conf.getOpenAIKey()
 
 		checkAssert(t, r, value)
+	})
+
+	t.Run("Should register user input", func(t *testing.T) {
+		openAI := "openAIKey"
+		gemini := "geminiKey"
+		input := bytes.NewBufferString(fmt.Sprintf("%s\n%s\n", openAI, gemini))
+
+		c := NewConfig()
+
+		c.configKey(input)
+
+		checkAssert(t, c.getGeminiKey(), gemini)
+		checkAssert(t, c.getOpenAIKey(), openAI)
+	})
 
 	})
 

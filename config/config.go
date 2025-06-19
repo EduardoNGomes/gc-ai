@@ -1,6 +1,9 @@
 package config
 
 import (
+	"fmt"
+	"io"
+
 	"github.com/gofor-little/env"
 )
 
@@ -9,9 +12,10 @@ type Config struct {
 	gemini_key  string
 }
 
+
 func (c *Config) isEmpty() bool {
 	gemini := c.getGeminiKey()
-	openAI := c.getOpenIAKey()
+	openAI := c.getOpenAIKey()
 
 	if len(gemini) == 0 && len(openAI) == 0 {
 		return true
@@ -20,11 +24,11 @@ func (c *Config) isEmpty() bool {
 	return false
 }
 
-func (c *Config) getOpenIAKey() string {
+func (c *Config) getOpenAIKey() string {
 	return c.open_ai_key
 }
 
-func (c *Config) setOpenIAKey(v string) {
+func (c *Config) setOpenAIKey(v string) {
 	c.open_ai_key = v
 }
 
@@ -47,7 +51,7 @@ func (c *Config) loadEnvs() {
 		env.Write("OPEN_AI", "", ".env", true)
 	}
 
-	c.setOpenIAKey(o)
+	c.setOpenAIKey(o)
 
 	g, err := env.MustGet("GEMINI")
 
@@ -56,5 +60,20 @@ func (c *Config) loadEnvs() {
 	}
 
 	c.setGeminiKey(g)
+}
 
+func (c *Config) configKey(reader io.Reader) {
+	var useInputOpenAi, useInputGemini string
+
+	fmt.Print("Write your OpenAI Key: ")
+	fmt.Fscanf(reader, "%s\n", &useInputOpenAi)
+	c.setOpenAIKey(useInputOpenAi)
+
+	fmt.Print("Write your Gemini Key: ")
+	fmt.Fscanf(reader, "%s\n", &useInputGemini)
+	c.setGeminiKey(useInputGemini)
+}
+
+func NewConfig() *Config {
+	return &Config{}
 }
