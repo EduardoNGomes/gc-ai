@@ -27,8 +27,9 @@ type ConfigMethods interface {
 }
 
 func (c *Config) Start(config ConfigMethods) {
-	c.loadEnvs()
+	config.loadEnvs()
 
+	config.isEmpty()
 }
 
 func (c *Config) isEmpty() bool {

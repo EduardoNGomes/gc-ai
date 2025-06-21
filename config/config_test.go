@@ -117,7 +117,21 @@ func TestConfig(t *testing.T) {
 
 		checkAssert(t, r, value)
 	})
-	//
+
+	t.Run("Should call config method on start method when env is empty", func(t *testing.T) {
+		conf := NewConfig()
+
+		confSpy := newConfSpy()
+
+		conf.Start(confSpy)
+		expect := true
+		result := confSpy.isEmptyCalled
+
+		if result != expect {
+			t.Errorf("Receive: '%v', Expect: '%v'", result, expect)
+		}
+
+	})
 
 }
 
