@@ -103,7 +103,21 @@ func TestConfig(t *testing.T) {
 		checkAssert(t, c.getOpenAIKey(), openAI)
 	})
 
+	t.Run("Should load envs on Start method", func(t *testing.T) {
+		value := "Key"
+		os.Setenv("OPEN_AI", value)
+
+		conf := NewConfig()
+
+		conf.Start(conf)
+
+		conf.getOpenAIKey()
+
+		r := conf.getOpenAIKey()
+
+		checkAssert(t, r, value)
 	})
+	//
 
 }
 

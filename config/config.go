@@ -12,6 +12,24 @@ type Config struct {
 	gemini_key  string
 }
 
+type ConfigMethods interface {
+	isEmpty() bool
+
+	getGeminiKey() string
+	setGeminiKey(string)
+
+	getOpenAIKey() string
+	setOpenAIKey(string)
+
+	loadEnvs()
+
+	configKey(io.Reader)
+}
+
+func (c *Config) Start(config ConfigMethods) {
+	c.loadEnvs()
+
+}
 
 func (c *Config) isEmpty() bool {
 	gemini := c.getGeminiKey()
