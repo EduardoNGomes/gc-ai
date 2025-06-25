@@ -109,7 +109,7 @@ func TestConfig(t *testing.T) {
 
 		conf := NewConfig()
 
-		conf.Start(conf)
+		conf.Start(conf, &bytes.Buffer{})
 
 		conf.getOpenAIKey()
 
@@ -123,14 +123,27 @@ func TestConfig(t *testing.T) {
 
 		confSpy := newConfSpy()
 
-		conf.Start(confSpy)
+		conf.Start(confSpy, &bytes.Buffer{})
 		expect := true
 		result := confSpy.isEmptyCalled
 
 		if result != expect {
 			t.Errorf("Receive: '%v', Expect: '%v'", result, expect)
 		}
+	})
 
+	t.Run("Should call config key if confif is empty", func(t *testing.T) {
+		conf := NewConfig()
+
+		confSpy := newConfSpy()
+
+		conf.Start(confSpy, &bytes.Buffer{})
+		expect := true
+		result := confSpy.isConfigKeyCalled
+
+		if result != expect {
+			t.Errorf("Receive: '%v', Expect: '%v'", result, expect)
+		}
 	})
 
 }

@@ -26,10 +26,15 @@ type ConfigMethods interface {
 	configKey(io.Reader)
 }
 
-func (c *Config) Start(config ConfigMethods) {
+func (c *Config) Start(config ConfigMethods, reader io.Reader) {
 	config.loadEnvs()
 
-	config.isEmpty()
+	r := config.isEmpty()
+
+	if r == true {
+		config.configKey(reader)
+	}
+
 }
 
 func (c *Config) isEmpty() bool {

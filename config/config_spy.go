@@ -3,7 +3,8 @@ package config
 import "io"
 
 type ConfigSpy struct {
-	isEmptyCalled bool
+	isEmptyCalled     bool
+	isConfigKeyCalled bool
 }
 
 func (c *ConfigSpy) isEmpty() bool {
@@ -26,7 +27,9 @@ func (c *ConfigSpy) setOpenAIKey(string) {}
 
 func (c *ConfigSpy) loadEnvs() {}
 
-func (c *ConfigSpy) configKey(io.Reader) {}
+func (c *ConfigSpy) configKey(io.Reader) {
+	c.isConfigKeyCalled = true
+}
 
 func newConfSpy() *ConfigSpy {
 	return &ConfigSpy{}
