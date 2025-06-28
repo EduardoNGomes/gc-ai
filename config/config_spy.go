@@ -3,34 +3,21 @@ package config
 import "io"
 
 type ConfigSpy struct {
-	isEmptyCalled     bool
-	isConfigKeyCalled bool
+	IsEmptyCalled     bool
+	IsConfigKeyCalled bool
 }
 
-func (c *ConfigSpy) isEmpty() bool {
-	c.isEmptyCalled = true
-
+func (c *ConfigSpy) IsEmpty() bool {
+	c.IsEmptyCalled = true
 	return true
 }
 
-func (c *ConfigSpy) getGeminiKey() string {
-	return ""
+func (c *ConfigSpy) LoadEnvs() {}
+
+func (c *ConfigSpy) ConfigKey(io.Reader) {
+	c.IsConfigKeyCalled = true
 }
 
-func (c *ConfigSpy) setGeminiKey(string) {}
-
-func (c *ConfigSpy) getOpenAIKey() string {
-	return ""
-}
-
-func (c *ConfigSpy) setOpenAIKey(string) {}
-
-func (c *ConfigSpy) loadEnvs() {}
-
-func (c *ConfigSpy) configKey(io.Reader) {
-	c.isConfigKeyCalled = true
-}
-
-func newConfSpy() *ConfigSpy {
+func NewConfSpy() *ConfigSpy {
 	return &ConfigSpy{}
 }

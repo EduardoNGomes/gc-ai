@@ -13,33 +13,14 @@ type Config struct {
 }
 
 type ConfigMethods interface {
-	isEmpty() bool
-
-	getGeminiKey() string
-	setGeminiKey(string)
-
-	getOpenAIKey() string
-	setOpenAIKey(string)
-
-	loadEnvs()
-
-	configKey(io.Reader)
+	LoadEnvs()
+	IsEmpty() bool
+	ConfigKey(io.Reader)
 }
 
-func (c *Config) Start(config ConfigMethods, reader io.Reader) {
-	config.loadEnvs()
-
-	r := config.isEmpty()
-
-	if r == true {
-		config.configKey(reader)
-	}
-
-}
-
-func (c *Config) isEmpty() bool {
-	gemini := c.getGeminiKey()
-	openAI := c.getOpenAIKey()
+func (c *Config) IsEmpty() bool {
+	gemini := c.GetGeminiKey()
+	openAI := c.GetOpenAIKey()
 
 	if len(gemini) == 0 && len(openAI) == 0 {
 		return true
@@ -48,7 +29,7 @@ func (c *Config) isEmpty() bool {
 	return false
 }
 
-func (c *Config) getOpenAIKey() string {
+func (c *Config) GetOpenAIKey() string {
 	return c.open_ai_key
 }
 
@@ -56,7 +37,7 @@ func (c *Config) setOpenAIKey(v string) {
 	c.open_ai_key = v
 }
 
-func (c *Config) getGeminiKey() string {
+func (c *Config) GetGeminiKey() string {
 	return c.gemini_key
 }
 
@@ -64,7 +45,7 @@ func (c *Config) setGeminiKey(v string) {
 	c.gemini_key = v
 }
 
-func (c *Config) loadEnvs() {
+func (c *Config) LoadEnvs() {
 	if err := env.Load("../.env"); err != nil {
 		panic(err)
 	}
@@ -86,7 +67,7 @@ func (c *Config) loadEnvs() {
 	c.setGeminiKey(g)
 }
 
-func (c *Config) configKey(reader io.Reader) {
+func (c *Config) ConfigKey(reader io.Reader) {
 	var useInputOpenAi, useInputGemini string
 
 	fmt.Print("Write your OpenAI Key: ")

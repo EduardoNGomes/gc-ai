@@ -12,7 +12,7 @@ func TestConfig(t *testing.T) {
 		key := "key"
 		conf := &Config{open_ai_key: "", gemini_key: key}
 
-		r := conf.getGeminiKey()
+		r := conf.GetGeminiKey()
 
 		if r != key {
 			t.Errorf("Expect %s, Receive %s", key, r)
@@ -23,7 +23,7 @@ func TestConfig(t *testing.T) {
 		key := "key"
 		conf := &Config{open_ai_key: key, gemini_key: ""}
 
-		r := conf.getOpenAIKey()
+		r := conf.GetOpenAIKey()
 
 		checkAssert(t, r, key)
 
@@ -39,7 +39,7 @@ func TestConfig(t *testing.T) {
 
 		conf.setGeminiKey(key)
 
-		r := conf.getGeminiKey()
+		r := conf.GetGeminiKey()
 
 		checkAssert(t, r, key)
 
@@ -52,7 +52,7 @@ func TestConfig(t *testing.T) {
 
 		conf.setOpenAIKey(key)
 
-		r := conf.getOpenAIKey()
+		r := conf.GetOpenAIKey()
 
 		checkAssert(t, r, key)
 
@@ -61,7 +61,7 @@ func TestConfig(t *testing.T) {
 	t.Run("Should return empty config", func(t *testing.T) {
 		conf := NewConfig()
 
-		r := conf.isEmpty()
+		r := conf.IsEmpty()
 
 		if r != true {
 			t.Errorf("Should be empty but receive: %v", r)
@@ -71,8 +71,8 @@ func TestConfig(t *testing.T) {
 	t.Run("Should load envs with empty values", func(t *testing.T) {
 		conf := NewConfig()
 
-		conf.loadEnvs()
-		r := conf.getGeminiKey()
+		conf.LoadEnvs()
+		r := conf.GetGeminiKey()
 
 		checkAssert(t, r, "")
 
@@ -84,8 +84,8 @@ func TestConfig(t *testing.T) {
 
 		conf := NewConfig()
 
-		conf.loadEnvs()
-		r := conf.getOpenAIKey()
+		conf.LoadEnvs()
+		r := conf.GetOpenAIKey()
 
 		checkAssert(t, r, value)
 	})
@@ -97,55 +97,11 @@ func TestConfig(t *testing.T) {
 
 		c := NewConfig()
 
-		c.configKey(input)
+		c.ConfigKey(input)
 
-		checkAssert(t, c.getGeminiKey(), gemini)
-		checkAssert(t, c.getOpenAIKey(), openAI)
+		checkAssert(t, c.GetGeminiKey(), gemini)
+		checkAssert(t, c.GetOpenAIKey(), openAI)
 	})
-
-	t.Run("Should load envs on Start method", func(t *testing.T) {
-		value := "Key"
-		os.Setenv("OPEN_AI", value)
-
-		conf := NewConfig()
-
-		conf.Start(conf, &bytes.Buffer{})
-
-		conf.getOpenAIKey()
-
-		r := conf.getOpenAIKey()
-
-		checkAssert(t, r, value)
-	})
-
-	t.Run("Should call config method on start method when env is empty", func(t *testing.T) {
-		conf := NewConfig()
-
-		confSpy := newConfSpy()
-
-		conf.Start(confSpy, &bytes.Buffer{})
-		expect := true
-		result := confSpy.isEmptyCalled
-
-		if result != expect {
-			t.Errorf("Receive: '%v', Expect: '%v'", result, expect)
-		}
-	})
-
-	t.Run("Should call config key if confif is empty", func(t *testing.T) {
-		conf := NewConfig()
-
-		confSpy := newConfSpy()
-
-		conf.Start(confSpy, &bytes.Buffer{})
-		expect := true
-		result := confSpy.isConfigKeyCalled
-
-		if result != expect {
-			t.Errorf("Receive: '%v', Expect: '%v'", result, expect)
-		}
-	})
-
 }
 
 func checkAssert(t *testing.T, r, e string) {
