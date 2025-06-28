@@ -1,4 +1,4 @@
-module gitbhub.com/eduardongomes/gcia
+module github.com/eduardongomes/gcai
 
 go 1.23.0
 
