@@ -12,10 +12,13 @@ func (c *ConfigSpy) IsEmpty() bool {
 	return true
 }
 
-func (c *ConfigSpy) LoadEnvs() {}
+func (c *ConfigSpy) LoadEnvs(path string) error {
+	return nil
+}
 
-func (c *ConfigSpy) ConfigKey(io.Reader) {
+func (c *ConfigSpy) ConfigKey(io.Reader) error {
 	c.IsConfigKeyCalled = true
+	return nil
 }
 
 func NewConfSpy() *ConfigSpy {
