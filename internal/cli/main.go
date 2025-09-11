@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"runtime"
 
-	c "github.com/eduardongomes/gcai/config"
 	"github.com/eduardongomes/gcai/errs"
+	c "github.com/eduardongomes/gcai/internal/config"
 )
 
 type CLI struct{}

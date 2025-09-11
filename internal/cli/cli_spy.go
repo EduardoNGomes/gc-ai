@@ -4,7 +4,7 @@ import (
 	"io"
 	"log"
 
-	c "github.com/eduardongomes/gcai/config"
+	c "github.com/eduardongomes/gcai/internal/config"
 )
 
 type CLISpy struct {
