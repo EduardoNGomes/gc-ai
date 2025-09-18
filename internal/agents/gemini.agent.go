@@ -10,10 +10,11 @@ import (
 
 type GeminiAgent struct{}
 
-func (agent *GeminiAgent) GetCommit(config *config.Config, diff string) (string, error) {
+func (agent *GeminiAgent) GetCommit(config config.ConfigMethods, diff string) (string, error) {
 	key := config.GetGeminiKey()
 
 	ctx := context.Background()
+
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{
 		APIKey:  key,
 		Backend: genai.BackendGeminiAPI,
