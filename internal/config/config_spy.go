@@ -21,6 +21,14 @@ func (c *ConfigSpy) ConfigKey(io.Reader) error {
 	return nil
 }
 
+func (c *ConfigSpy) GetGeminiKey() string {
+	return "test_key"
+}
+
+func (c *ConfigSpy) GetOpenAIKey() string {
+	return "test_key"
+}
+
 func NewConfSpy() *ConfigSpy {
 	return &ConfigSpy{}
 }

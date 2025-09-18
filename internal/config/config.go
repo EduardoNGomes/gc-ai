@@ -26,6 +26,8 @@ type ConfigMethods interface {
 	LoadEnvs(configPath string) error
 	IsEmpty() bool
 	ConfigKey(io.Reader) error
+	GetGeminiKey() string
+	GetOpenAIKey() string
 }
 
 func NewConfig() *Config {
