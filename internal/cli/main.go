@@ -17,10 +17,10 @@ import (
 type CLI struct{}
 
 type CLIMethdos interface {
-	Run(c c.ConfigMethods, a agents.AgentMethods, r io.Reader)
+	Run(openConfig bool, c c.ConfigMethods, a agents.AgentMethods, r io.Reader)
 }
 
-func (cli *CLI) Run(c config.ConfigMethods, a agents.AgentMethods, reader io.Reader) {
+func (cli *CLI) Run(openConfig bool, c config.ConfigMethods, a agents.AgentMethods, reader io.Reader) {
 	_, filename, _, ok := runtime.Caller(0)
 
 	if !ok {
@@ -35,7 +35,7 @@ func (cli *CLI) Run(c config.ConfigMethods, a agents.AgentMethods, reader io.Rea
 
 	r := c.IsEmpty()
 
-	if r == true {
+	if r == true || openConfig {
 		c.ConfigKey(reader)
 	}
 

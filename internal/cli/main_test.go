@@ -20,7 +20,7 @@ func TestCLI(t *testing.T) {
 		cli := NewCLI()
 		agent := agents.NewMockAgent()
 
-		cli.Run(confSpy, agent, &bytes.Buffer{})
+		cli.Run(false, confSpy, agent, &bytes.Buffer{})
 
 		expect := true
 		result := confSpy.IsEmptyCalled
@@ -35,7 +35,7 @@ func TestCLI(t *testing.T) {
 		confSpy := c.NewConfSpy()
 
 		agent := agents.NewMockAgent()
-		cli.Run(confSpy, agent, &bytes.Buffer{})
+		cli.Run(false, confSpy, agent, &bytes.Buffer{})
 		expect := true
 		result := confSpy.IsConfigKeyCalled
 
