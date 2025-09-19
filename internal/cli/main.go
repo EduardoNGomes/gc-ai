@@ -25,16 +25,25 @@ type CLIMethdos interface {
 var embeddedConfig []byte
 
 func (cli *CLI) Run(openConfig bool, c config.ConfigMethods, a agents.AgentMethods, reader io.Reader) {
-	exePath, _ := os.Executable()
-	exeDir := filepath.Dir(exePath)
-	configPath := filepath.Join(exeDir, ".config.json")
+
+	home, err := os.UserHomeDir()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	configDir := filepath.Join(home, ".config", "gcai")
+	if err := os.MkdirAll(configDir, 0755); err != nil {
+		log.Fatal(err)
+	}
+
+	configPath := filepath.Join(configDir, "config.json")
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		if err := os.WriteFile(configPath, embeddedConfig, 0644); err != nil {
 			log.Fatal(err)
 		}
 	}
-
 	if err := c.LoadEnvs(configPath); err != nil {
 		log.Fatal(err)
 	}
