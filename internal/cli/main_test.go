@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/eduardongomes/gcai/errs"
+	"github.com/eduardongomes/gcai/internal/agents"
 	c "github.com/eduardongomes/gcai/internal/config"
 )
 
@@ -17,8 +18,9 @@ func TestCLI(t *testing.T) {
 	t.Run("Should call config method on start method when config is empty", func(t *testing.T) {
 		confSpy := c.NewConfSpy()
 		cli := NewCLI()
+		agent := agents.NewMockAgent()
 
-		cli.Run(confSpy, &bytes.Buffer{})
+		cli.Run(confSpy, agent, &bytes.Buffer{})
 
 		expect := true
 		result := confSpy.IsEmptyCalled
@@ -32,7 +34,8 @@ func TestCLI(t *testing.T) {
 		cli := NewCLI()
 		confSpy := c.NewConfSpy()
 
-		cli.Run(confSpy, &bytes.Buffer{})
+		agent := agents.NewMockAgent()
+		cli.Run(confSpy, agent, &bytes.Buffer{})
 		expect := true
 		result := confSpy.IsConfigKeyCalled
 

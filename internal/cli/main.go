@@ -7,16 +7,18 @@ import (
 	"runtime"
 
 	"github.com/eduardongomes/gcai/errs"
+	"github.com/eduardongomes/gcai/internal/agents"
+	"github.com/eduardongomes/gcai/internal/config"
 	c "github.com/eduardongomes/gcai/internal/config"
 )
 
 type CLI struct{}
 
 type CLIMethdos interface {
-	Run(c c.ConfigMethods, r io.Reader)
+	Run(c c.ConfigMethods, a agents.AgentMethods, r io.Reader)
 }
 
-func (cli *CLI) Run(config c.ConfigMethods, reader io.Reader) {
+func (cli *CLI) Run(c config.ConfigMethods, a agents.AgentMethods, reader io.Reader) {
 	_, filename, _, ok := runtime.Caller(0)
 
 	if !ok {
@@ -25,14 +27,24 @@ func (cli *CLI) Run(config c.ConfigMethods, reader io.Reader) {
 
 	configPath := filepath.Join(filepath.Dir(filename), "../.config.json")
 
-	if err := config.LoadEnvs(configPath); err != nil {
+	if err := c.LoadEnvs(configPath); err != nil {
 		log.Fatal(err)
 	}
 
-	r := config.IsEmpty()
+	r := c.IsEmpty()
 
 	if r == true {
-		config.ConfigKey(reader)
+		c.ConfigKey(reader)
+	}
+
+	msg, err := a.GetCommit(c)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := a.MakeCommit(msg); err != nil {
+		log.Fatal(err)
 	}
 }
 
