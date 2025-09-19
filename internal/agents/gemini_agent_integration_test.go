@@ -14,10 +14,7 @@ func TestAgent(t *testing.T) {
 		agent := NewGeminiAgent()
 		c := c.NewConfSpy()
 
-		diff := `diff --git a/main.go b/main.go
-   				 +fmt.Println("hello world")`
-
-		_, err := agent.GetCommit(c, diff)
+		_, err := agent.GetCommit(c)
 
 		if err == nil {
 			t.Errorf("Should not work with fake key")

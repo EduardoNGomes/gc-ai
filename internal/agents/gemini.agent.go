@@ -3,6 +3,7 @@ package agents
 import (
 	"context"
 	"fmt"
+	"os/exec"
 
 	"github.com/eduardongomes/gcai/internal/config"
 	"google.golang.org/genai"
@@ -10,7 +11,7 @@ import (
 
 type GeminiAgent struct{}
 
-func (agent *GeminiAgent) GetCommit(config config.ConfigMethods, diff string) (string, error) {
+func (agent *GeminiAgent) GetCommit(config config.ConfigMethods) (string, error) {
 	key := config.GetGeminiKey()
 
 	ctx := context.Background()
@@ -24,6 +25,12 @@ func (agent *GeminiAgent) GetCommit(config config.ConfigMethods, diff string) (s
 		return "", fmt.Errorf("Error on get context: %w", err)
 	}
 
+	diff, err := agent.GetDiff()
+
+	if err != nil {
+		return "", err
+	}
+
 	result, err := client.Models.GenerateContent(
 		ctx,
 		"gemini-2.5-flash-lite",
@@ -35,7 +42,33 @@ func (agent *GeminiAgent) GetCommit(config config.ConfigMethods, diff string) (s
 		return "", fmt.Errorf("error on generate content %w", err)
 	}
 
+	fmt.Println(result.Text())
+
 	return result.Text(), nil
+}
+
+func (agent *GeminiAgent) GetDiff() (string, error) {
+
+	diff := exec.Command("git", "diff", "--cached")
+
+	stdout, err := diff.Output()
+
+	if err != nil {
+		return "", fmt.Errorf("Error on get git diff: %w", err)
+	}
+
+	return string(stdout), nil
+}
+
+func (agent *GeminiAgent) MakeCommit(msg string) error {
+
+	r := exec.Command("git", "commit", "-m", msg)
+
+	if _, err := r.Output(); err != nil {
+		return fmt.Errorf("Erro on make commir: %w", err)
+	}
+
+	return nil
 }
 
 func (agent *GeminiAgent) Edit(v string) string {
