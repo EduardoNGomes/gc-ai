@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"errors"
+	"fmt"
 	"io"
 	"log"
 	"path/filepath"
@@ -40,6 +42,10 @@ func (cli *CLI) Run(c config.ConfigMethods, a agents.AgentMethods, reader io.Rea
 	msg, err := a.GetCommit(c)
 
 	if err != nil {
+		if errors.Is(err, errs.EmptyKeyError) {
+			fmt.Println(err)
+			return
+		}
 		log.Fatal(err)
 	}
 
