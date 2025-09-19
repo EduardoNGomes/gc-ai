@@ -5,6 +5,8 @@ import "io"
 type ConfigSpy struct {
 	IsEmptyCalled     bool
 	IsConfigKeyCalled bool
+	geminiKey         string
+	openAIKey         string
 }
 
 func (c *ConfigSpy) IsEmpty() bool {
@@ -22,13 +24,24 @@ func (c *ConfigSpy) ConfigKey(io.Reader) error {
 }
 
 func (c *ConfigSpy) GetGeminiKey() string {
-	return "test_key"
+	return c.geminiKey
+}
+
+func (c *ConfigSpy) SetGeminiKey(i string) {
+	c.geminiKey = i
 }
 
 func (c *ConfigSpy) GetOpenAIKey() string {
-	return "test_key"
+	return c.openAIKey
+}
+
+func (c *ConfigSpy) SetOpenAiKey(i string) {
+	c.openAIKey = i
 }
 
 func NewConfSpy() *ConfigSpy {
-	return &ConfigSpy{}
+	return &ConfigSpy{
+		geminiKey: "test_key",
+		openAIKey: "test_key",
+	}
 }
