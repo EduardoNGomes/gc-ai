@@ -1,12 +1,13 @@
 package cli
 
 import (
+	_ "embed"
 	"errors"
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"path/filepath"
-	"runtime"
 
 	"github.com/eduardongomes/gcai/errs"
 	"github.com/eduardongomes/gcai/internal/agents"
@@ -20,14 +21,19 @@ type CLIMethdos interface {
 	Run(openConfig bool, c c.ConfigMethods, a agents.AgentMethods, r io.Reader)
 }
 
+//go:embed .config.json
+var embeddedConfig []byte
+
 func (cli *CLI) Run(openConfig bool, c config.ConfigMethods, a agents.AgentMethods, reader io.Reader) {
-	_, filename, _, ok := runtime.Caller(0)
+	exePath, _ := os.Executable()
+	exeDir := filepath.Dir(exePath)
+	configPath := filepath.Join(exeDir, ".config.json")
 
-	if !ok {
-		log.Fatal(errs.CannotOpenFileErr)
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		if err := os.WriteFile(configPath, embeddedConfig, 0644); err != nil {
+			log.Fatal(err)
+		}
 	}
-
-	configPath := filepath.Join(filepath.Dir(filename), "../.config.json")
 
 	if err := c.LoadEnvs(configPath); err != nil {
 		log.Fatal(err)
