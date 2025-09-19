@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 
+	"github.com/eduardongomes/gcai/errs"
 	"github.com/eduardongomes/gcai/internal/config"
 	"google.golang.org/genai"
 )
@@ -13,6 +14,10 @@ type GeminiAgent struct{}
 
 func (agent *GeminiAgent) GetCommit(config config.ConfigMethods) (string, error) {
 	key := config.GetGeminiKey()
+
+	if len(key) == 0 {
+		return "", errs.EmptyKeyError
+	}
 
 	ctx := context.Background()
 
