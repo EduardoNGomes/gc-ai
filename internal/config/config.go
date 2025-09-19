@@ -78,11 +78,13 @@ func (c *Config) LoadEnvs(configPath string) error {
 	if err := json.Unmarshal(f, &e); err != nil {
 		fmt.Println("err", err)
 		fileConfig, err := os.OpenFile(configPath, os.O_RDWR, 0)
-		defer fileConfig.Close()
 
 		if err != nil {
 			return fmt.Errorf(errs.CannotOpenFileErr+" -> %w", err)
 		}
+
+		defer fileConfig.Close()
+
 		writeKeys(fileConfig, "", "")
 	}
 
@@ -94,11 +96,12 @@ func (c *Config) LoadEnvs(configPath string) error {
 
 func (c *Config) ConfigKey(reader io.Reader) error {
 	fileConfig, err := os.OpenFile(c.configPath, os.O_RDWR, 0)
-	defer fileConfig.Close()
 
 	if err != nil {
 		return fmt.Errorf(errs.CannotOpenFileErr+" -> %w", err)
 	}
+
+	defer fileConfig.Close()
 
 	f, err := io.ReadAll(fileConfig)
 
