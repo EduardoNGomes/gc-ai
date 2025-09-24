@@ -1,6 +1,6 @@
 module github.com/eduardongomes/gcai
 
-go 1.24
+go 1.25
 
 require (
 	cloud.google.com/go v0.116.0 // indirect
