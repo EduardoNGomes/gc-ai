@@ -15,4 +15,6 @@ const ErrorOnWriteFileConfig = "Error on write file config"
 
 var EmptyKeyError = errors.New("Cannot make commit without AI Key")
 
+var EmptyDiffError = errors.New("Cannot make commit without any diff")
+
 var InvalidJson *json.UnmarshalTypeError
