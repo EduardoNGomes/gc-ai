@@ -33,6 +33,7 @@ func (cli *CLI) Run(openConfig bool, c config.ConfigMethods, a agents.AgentMetho
 	}
 
 	configDir := filepath.Join(home, ".config", "gcai")
+
 	if err := os.MkdirAll(configDir, 0755); err != nil {
 		log.Fatal(err)
 	}
@@ -44,6 +45,7 @@ func (cli *CLI) Run(openConfig bool, c config.ConfigMethods, a agents.AgentMetho
 			log.Fatal(err)
 		}
 	}
+
 	if err := c.LoadEnvs(configPath); err != nil {
 		log.Fatal(err)
 	}
@@ -57,11 +59,16 @@ func (cli *CLI) Run(openConfig bool, c config.ConfigMethods, a agents.AgentMetho
 	msg, err := a.GetCommit(c)
 
 	if err != nil {
-		if errors.Is(err, errs.EmptyKeyError) {
+		switch {
+		case errors.Is(err, errs.EmptyKeyError):
 			fmt.Println(err)
 			return
+		case errors.Is(err, errs.EmptyDiffError):
+			fmt.Println(err)
+			return
+		default:
+			log.Fatal(err)
 		}
-		log.Fatal(err)
 	}
 
 	if err := a.MakeCommit(msg); err != nil {
