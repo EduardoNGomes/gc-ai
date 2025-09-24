@@ -62,15 +62,24 @@ func (agent *GeminiAgent) GetDiff() (string, error) {
 		return "", fmt.Errorf("Error on get git diff: %w", err)
 	}
 
-	return string(stdout), nil
+	d := string(stdout)
+
+	if len(d) == 0 {
+		return "", errs.EmptyDiffError
+
+	}
+
+	return d, nil
 }
+
+var execCommand = exec.Command
 
 func (agent *GeminiAgent) MakeCommit(msg string) error {
 
-	r := exec.Command("git", "commit", "-m", msg)
+	r := execCommand("git", "commit", "-m", msg)
 
 	if _, err := r.Output(); err != nil {
-		return fmt.Errorf("Erro on make commir: %w", err)
+		return fmt.Errorf("Erro on make commit: %v", err)
 	}
 
 	return nil
