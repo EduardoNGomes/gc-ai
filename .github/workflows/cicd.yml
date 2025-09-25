@@ -23,13 +23,17 @@ jobs:
         run: |
           go build -o gcai ./cmd
 
+      - name: Build MacOS Arm
+        run: |
+          GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o gcai-macos-arm ./cmd
+
       - name: Build MacOS binary
         run: |
-          GOOS=darwin GOARCH=amd64 go build -o gcai-macos ./cmd
+          GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o gcai-macos ./cmd
 
       - name: Build Windows binary
         run: |
-          GOOS=windows GOARCH=amd64 go build -o gcai-windows.exe ./cmd
+          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o gcai-windows.exe ./cmd
 
       - name: Checkout target Repository
         uses: actions/checkout@v4
