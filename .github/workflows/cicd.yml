@@ -26,10 +26,12 @@ jobs:
       - name: Build MacOS Arm
         run: |
           GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o gcai-macos-arm ./cmd
+          codesign -s - --deep -f gcai-macos-arm64
 
       - name: Build MacOS binary
         run: |
           GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o gcai-macos ./cmd
+          codesign -s - --deep -f gcai-macos
 
       - name: Build Windows binary
         run: |
