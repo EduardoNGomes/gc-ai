@@ -21,7 +21,7 @@ jobs:
 
       - name: Build linux binary
         run: |
-          go build -o gcai ./cmd
+          go build -o -ldflags="-s -w" -o gcai ./cmd
 
       - name: Build MacOS Arm
         run: |
@@ -43,7 +43,7 @@ jobs:
           path: target-repo
 
       - name: Copy build artifact
-        run: cp gcai gcai-macos gcai-windows.exe target-repo/
+        run: cp gcai gcai-macos gcai-macos-arm gcai-windows.exe target-repo/
 
       - name: Commit and push to target repo
         run: |
