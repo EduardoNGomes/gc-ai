@@ -52,9 +52,11 @@ func (agent *GeminiAgent) GetCommit(config config.ConfigMethods) (string, error)
 	return result.Text(), nil
 }
 
+var execCommand = exec.Command
+
 func (agent *GeminiAgent) GetDiff() (string, error) {
 
-	diff := exec.Command("git", "diff", "--cached")
+	diff := execCommand("git", "diff", "--cached")
 
 	stdout, err := diff.Output()
 
@@ -71,8 +73,6 @@ func (agent *GeminiAgent) GetDiff() (string, error) {
 
 	return d, nil
 }
-
-var execCommand = exec.Command
 
 func (agent *GeminiAgent) MakeCommit(msg string) error {
 

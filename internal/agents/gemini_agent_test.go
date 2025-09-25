@@ -20,6 +20,39 @@ func TestGeminiAgent(t *testing.T) {
 		}
 	})
 
+	t.Run("[GetDiff]should return err on get diff", func(t *testing.T) {
+		agent := NewGeminiAgent()
+
+		execCommand = func(name string, args ...string) *exec.Cmd {
+			return exec.Command("false")
+		}
+
+		defer func() { execCommand = exec.Command }()
+
+		_, err := agent.GetDiff()
+
+		if err == nil {
+			t.Error("[Diff]Expect error receive nil")
+		}
+	})
+
+	t.Run("[GetDiff] Should not get error on get diff", func(t *testing.T) {
+		agent := NewGeminiAgent()
+
+		execCommand = func(name string, args ...string) *exec.Cmd {
+			return exec.Command("echo", "fake-diff-success")
+		}
+
+		defer func() { execCommand = exec.Command }()
+
+		_, err := agent.GetDiff()
+
+		if err != nil {
+			t.Errorf("Error on get diff %v", err)
+		}
+
+	})
+
 	t.Run("[GetCommit]Should receive error if has wrong api_key", func(t *testing.T) {
 		agent := NewGeminiAgent()
 		c := c.NewConfSpy()
@@ -38,6 +71,21 @@ func TestGeminiAgent(t *testing.T) {
 
 	})
 
+	t.Run("[MakeCommit] Should  get error on try make commit", func(t *testing.T) {
+		agent := NewGeminiAgent()
+
+		execCommand = func(name string, args ...string) *exec.Cmd {
+			return exec.Command("false")
+		}
+
+		defer func() { execCommand = exec.Command }()
+
+		err := agent.MakeCommit("fake diff")
+		if err == nil {
+			t.Error("[MakeCommit] -> Expect error receive nil")
+		}
+	})
+
 	t.Run("[MakeCommit] Should not get error on try make commit", func(t *testing.T) {
 		agent := NewGeminiAgent()
 
@@ -53,20 +101,5 @@ func TestGeminiAgent(t *testing.T) {
 			t.Errorf("Error on make commit %v", err)
 		}
 
-	})
-
-	t.Run("[MakeCommit] Should  get error on try make commit", func(t *testing.T) {
-		agent := NewGeminiAgent()
-
-		execCommand = func(name string, args ...string) *exec.Cmd {
-			return exec.Command("false")
-		}
-
-		defer func() { execCommand = exec.Command }()
-
-		err := agent.MakeCommit("fake diff")
-		if err == nil {
-			t.Errorf("esperava erro, mas veio nil")
-		}
 	})
 }
