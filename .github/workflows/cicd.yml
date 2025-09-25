@@ -20,22 +20,71 @@ jobs:
           go-version: "1.25"
 
       - name: Build linux binary
-        run: |
-          go build -o -ldflags="-s -w" -o gcai ./cmd
-
-      - name: Build MacOS Arm
-        run: |
-          GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o gcai-macos-arm ./cmd
-          codesign -s - --deep -f gcai-macos-arm64
-
-      - name: Build MacOS binary
-        run: |
-          GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o gcai-macos ./cmd
-          codesign -s - --deep -f gcai-macos
+        run: go build -ldflags="-s -w" -o gcai ./cmd
 
       - name: Build Windows binary
-        run: |
-          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o gcai-windows.exe ./cmd
+        run: GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o gcai-windows.exe ./cmd
+
+      - name: Upload Linux and Windows binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries-ubuntu
+          path: |
+            gcai
+            gcai-windows.exe
+
+  build-macos:
+    runs-on: macos-latest
+    env:
+      REPO: eduardongomes/gcai-release
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+
+      - name: Build MacOS Arm
+        run: GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o gcai-macos-arm ./cmd
+
+      - name: Codesign MacOS Arm binary
+        run: codesign -s - --deep -f gcai-macos-arm
+
+      - name: Build MacOS binary
+        run: GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o gcai-macos ./cmd
+
+      - name: Codesign MacOS binary
+        run: codesign -s - --deep -f gcai-macos
+
+      - name: Upload MacOS binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries-macos
+          path: |
+            gcai-macos-arm
+            gcai-macos
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build, build-macos]
+    env:
+      REPO: eduardongomes/gcai-release
+
+    steps:
+      - name: Download Linux and Windows binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: binaries-ubuntu
+          path: .
+
+      - name: Download MacOS binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: binaries-macos
+          path: .
 
       - name: Checkout target Repository
         uses: actions/checkout@v4
@@ -44,12 +93,12 @@ jobs:
           token: ${{ secrets.PAT }}
           path: target-repo
 
-      - name: Copy build artifact
+      - name: Copy build artifacts
         run: cp gcai gcai-macos gcai-macos-arm gcai-windows.exe target-repo/
 
       - name: Commit and push to target repo
         run: |
-          cd  target-repo
+          cd target-repo
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
