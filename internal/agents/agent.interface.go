@@ -10,6 +10,8 @@ Structure:
 	- type
 	- message
 
+- No use SCOPE between parentheses
+
 Examples:
 - feat: implement clas Login to handler member login
 - feat: add internal link suggestion
