@@ -5,12 +5,16 @@ import (
 	"fmt"
 	"os/exec"
 
+	"github.com/chzyer/readline"
 	"github.com/eduardongomes/gcai/errs"
 	"github.com/eduardongomes/gcai/internal/config"
+	l "github.com/eduardongomes/gcai/internal/line-reader"
 	"google.golang.org/genai"
 )
 
-type GeminiAgent struct{}
+type GeminiAgent struct {
+	newReader func() (l.LineReader, error)
+}
 
 func (agent *GeminiAgent) GetCommit(config config.ConfigMethods) (string, error) {
 	key := config.GetGeminiKey()
@@ -76,7 +80,7 @@ func (agent *GeminiAgent) GetDiff() (string, error) {
 
 func (agent *GeminiAgent) MakeCommit(msg string) error {
 
-	r := execCommand("git", "commit", "-m", msg)
+	r := execCommand("git", "commit", "-m", msg, "--no-verify")
 
 	if _, err := r.Output(); err != nil {
 		return fmt.Errorf("Erro on make commit: %v", err)
@@ -85,10 +89,27 @@ func (agent *GeminiAgent) MakeCommit(msg string) error {
 	return nil
 }
 
-func (agent *GeminiAgent) Edit(v string) string {
-	return ""
+func (agent *GeminiAgent) Edit(msg string) (string, error) {
+	rl, err := agent.newReader()
+	if err != nil {
+		return "", fmt.Errorf("error creating reader: %v", err)
+	}
+	defer rl.Close()
+
+	rl.WriteStdin([]byte(msg))
+	line, err := rl.Readline()
+	if err != nil {
+		return "", fmt.Errorf("error reading line: %v", err)
+	}
+
+	return line, nil
 }
 
 func NewGeminiAgent() *GeminiAgent {
-	return &GeminiAgent{}
+	return &GeminiAgent{
+		newReader: func() (l.LineReader, error) {
+			return readline.New("")
+		},
+	}
+
 }
