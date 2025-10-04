@@ -7,6 +7,7 @@ import (
 
 	"github.com/eduardongomes/gcai/errs"
 	c "github.com/eduardongomes/gcai/internal/config"
+	l "github.com/eduardongomes/gcai/internal/line-reader"
 )
 
 func TestGeminiAgent(t *testing.T) {
@@ -101,5 +102,25 @@ func TestGeminiAgent(t *testing.T) {
 			t.Errorf("Error on make commit %v", err)
 		}
 
+	})
+
+	t.Run("", func(t *testing.T) {
+		mock := l.NewMockReader()
+		agent := &GeminiAgent{
+			newReader: func() (l.LineReader, error) {
+				return mock, nil
+			},
+		}
+
+		out, err := agent.Edit("hello world")
+
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		expected := "hello world (edited)"
+		if out != expected {
+			t.Errorf("expected %q, got %q", expected, out)
+		}
 	})
 }

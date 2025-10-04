@@ -16,8 +16,8 @@ func (agent *MockAgent) MakeCommit(msg string) error {
 	return nil
 }
 
-func (agent *MockAgent) Edit(v string) string {
-	return ""
+func (agent *MockAgent) Edit(v string) (string, error) {
+	return "", nil
 }
 
 func NewMockAgent() *MockAgent {
