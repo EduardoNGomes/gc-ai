@@ -91,6 +91,7 @@ func (agent *GeminiAgent) MakeCommit(msg string) error {
 
 func (agent *GeminiAgent) Edit(msg string) (string, error) {
 	rl, err := agent.newReader()
+
 	if err != nil {
 		return "", fmt.Errorf("error creating reader: %v", err)
 	}
@@ -111,5 +112,4 @@ func NewGeminiAgent() *GeminiAgent {
 			return readline.New("")
 		},
 	}
-
 }
