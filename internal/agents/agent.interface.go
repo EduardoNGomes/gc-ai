@@ -20,7 +20,7 @@ Examples:
 
 type AgentMethods interface {
 	GetCommit(c c.ConfigMethods) (string, error)
-	Edit(v string) string
+	Edit(v string) (string, error)
 	GetDiff() (string, error)
 	MakeCommit(msg string) error
 }
