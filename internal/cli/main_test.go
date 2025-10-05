@@ -7,6 +7,7 @@ import (
 	"github.com/eduardongomes/gcai/internal/agents"
 	c "github.com/eduardongomes/gcai/internal/config"
 	"github.com/eduardongomes/gcai/internal/flags"
+	f "github.com/eduardongomes/gcai/internal/flags"
 )
 
 func TestCLI(t *testing.T) {
@@ -16,6 +17,7 @@ func TestCLI(t *testing.T) {
 		EditCommit:      false,
 		AlterEditConfig: nil,
 	}
+
 	t.Run("Should call config method on start method when config is empty", func(t *testing.T) {
 		confSpy := c.NewConfSpy()
 		cli := NewCLI()
@@ -44,4 +46,54 @@ func TestCLI(t *testing.T) {
 			t.Errorf("Receive: '%v', Expect: '%v'", result, expect)
 		}
 	})
+
+	t.Run("[Alter Config] should alter config be called", func(t *testing.T) {
+		cli := NewCLI()
+		conf := c.NewConfSpy()
+		reader := &bytes.Buffer{}
+		agent := agents.NewMockAgent()
+		trueVal := true
+		flags := f.Flags{
+			AlterEditConfig: &trueVal,
+		}
+
+		cli.Run(flags, conf, agent, reader)
+
+		if conf.SetAllowEditCall == nil || *conf.SetAllowEditCall != true {
+			t.Errorf("Expected SetAllowEdit to be called with true")
+		}
+
+		if agent.GetCommitCalled || agent.MakeCommitCalled {
+			t.Errorf("Agents should not be called when altering config")
+		}
+
+	})
+
+	t.Run("[Edit Commit] shoul call edit commit", func(t *testing.T) {
+		cli := NewCLI()
+
+		conf := c.NewConfSpy()
+		reader := &bytes.Buffer{}
+		agent := agents.NewMockAgent()
+
+		flags := f.Flags{
+			OpenConfig:      false,
+			EditCommit:      true,
+			AlterEditConfig: nil,
+		}
+
+		cli.Run(flags, conf, agent, reader)
+
+		if !agent.GetCommitCalled {
+			t.Errorf("Expected GetCommit to be called")
+		}
+		if !agent.EditCalled {
+			t.Errorf("Expected Edit to be called")
+		}
+		if !agent.MakeCommitCalled {
+			t.Errorf("Expected MakeCommit to be called")
+		}
+
+	})
+
 }
