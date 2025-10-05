@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"os"
 	"testing"
@@ -120,6 +121,61 @@ func TestConfig(t *testing.T) {
 		checkAssert(t, c.GetGeminiKey(), gemini)
 		checkAssert(t, c.GetOpenAIKey(), openAI)
 	})
+
+	t.Run("[SetAllowEdit] should alter edit config", func(t *testing.T) {
+		c := NewConfig()
+
+		if err := c.SetAllowEdit(true, false); err != nil {
+			t.Errorf("Err on set Key -> %v", err)
+		}
+
+		r := c.GetAllowEdit()
+
+		if r != true {
+			t.Errorf("Unexpect value, expect %t, receive %t", true, r)
+		}
+	})
+	t.Run("[SetAllowEdit] should alter edit config rewrite file", func(t *testing.T) {
+		c := NewConfig()
+
+		cpath := createTestPath(t)
+		createTestFile(t, cpath, "", "")
+
+		if err := c.LoadEnvs(cpath); err != nil {
+			t.Errorf("Error on load env ->  %v", err)
+		}
+		firstValue := c.GetAllowEdit()
+
+		if firstValue != false {
+			t.Errorf("Unexpect value, expect %t, receive %t", false, firstValue)
+		}
+
+		newValue := true
+
+		if err := c.SetAllowEdit(newValue, true); err != nil {
+			t.Errorf("Err on set Key -> %v", err)
+		}
+		f, err := os.ReadFile(cpath)
+
+		if err != nil {
+			t.Errorf("Err on read file -> %v", err)
+		}
+
+		var eTest envStruct
+
+		err = json.Unmarshal(f, &eTest)
+
+		if err := json.Unmarshal(f, &eTest); err != nil {
+			t.Errorf("Err decode JSON -> %v", err)
+		}
+
+		r := eTest.AllowEdit
+
+		if r != newValue {
+			t.Errorf("Err on set new config, expect %t receive %t ", newValue, r)
+		}
+
+	})
 }
 
 func checkAssert(t *testing.T, r, e string) {
@@ -141,13 +197,14 @@ func createTestPath(t *testing.T) string {
 
 func createTestFile(t *testing.T, p, geminiV, openAIV string) {
 	f, err := os.Create(p)
-	defer f.Close()
 
 	if err != nil {
 		t.Errorf(errs.CannotOpenFileErr+" -> %v", err)
 	}
 
-	if err = writeKeys(f, geminiV, openAIV); err != nil {
+	defer f.Close()
+
+	if err = writeConfig(f, geminiV, openAIV, false); err != nil {
 		t.Error(err)
 	}
 }
