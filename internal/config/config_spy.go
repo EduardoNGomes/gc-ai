@@ -8,6 +8,7 @@ type ConfigSpy struct {
 	geminiKey         string
 	openAIKey         string
 	allow_edit        bool
+	SetAllowEditCall  *bool
 }
 
 func (c *ConfigSpy) IsEmpty() bool {
@@ -44,7 +45,8 @@ func (c *ConfigSpy) GetAllowEdit() bool {
 	return c.allow_edit
 }
 
-func (c *ConfigSpy) SetAllowEdit(v, rewrite bool) error {
+func (c *ConfigSpy) SetAllowEdit(val bool, _ bool) error {
+	c.SetAllowEditCall = &val
 	return nil
 }
 
