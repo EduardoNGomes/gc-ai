@@ -2,22 +2,29 @@ package agents
 
 import "github.com/eduardongomes/gcai/internal/config"
 
-type MockAgent struct{}
-
-func (agent *MockAgent) GetCommit(config config.ConfigMethods) (string, error) {
-	return "", nil
+type MockAgent struct {
+	GetCommitCalled  bool
+	MakeCommitCalled bool
+	EditCalled       bool
 }
 
 func (agent *MockAgent) GetDiff() (string, error) {
 	return "", nil
 }
 
-func (agent *MockAgent) MakeCommit(msg string) error {
-	return nil
+func (m *MockAgent) GetCommit(c config.ConfigMethods) (string, error) {
+	m.GetCommitCalled = true
+	return "commit-msg", nil
 }
 
-func (agent *MockAgent) Edit(v string) (string, error) {
-	return "", nil
+func (m *MockAgent) Edit(msg string) (string, error) {
+	m.EditCalled = true
+	return msg + "-edited", nil
+}
+
+func (m *MockAgent) MakeCommit(msg string) error {
+	m.MakeCommitCalled = true
+	return nil
 }
 
 func NewMockAgent() *MockAgent {
