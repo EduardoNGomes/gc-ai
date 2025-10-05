@@ -13,11 +13,13 @@ type Config struct {
 	open_ai_key string
 	gemini_key  string
 	configPath  string
+	allow_edit  bool
 }
 
 type envStruct struct {
 	GeminiKey string `json:"geminiKey"`
 	OpenAIKey string `json:"openAIAKey"`
+	AllowEdit bool   `json:"allowEdit"`
 }
 
 var e envStruct
@@ -28,6 +30,8 @@ type ConfigMethods interface {
 	ConfigKey(io.Reader) error
 	GetGeminiKey() string
 	GetOpenAIKey() string
+	GetAllowEdit() bool
+	SetAllowEdit(v, rewrite bool) error
 }
 
 func NewConfig() *Config {
@@ -43,6 +47,30 @@ func (c *Config) IsEmpty() bool {
 	}
 
 	return false
+}
+
+func (c *Config) GetAllowEdit() bool {
+	return c.allow_edit
+}
+
+func (c *Config) SetAllowEdit(v, rewrite bool) error {
+	c.allow_edit = v
+
+	if rewrite == true {
+		fileConfig, err := os.OpenFile(c.configPath, os.O_RDWR, 0)
+
+		if err != nil {
+			return fmt.Errorf(errs.CannotOpenFileErr+" -> %w", err)
+		}
+
+		defer fileConfig.Close()
+
+		if err = writeConfig(fileConfig, c.gemini_key, c.open_ai_key, c.allow_edit); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (c *Config) GetOpenAIKey() string {
@@ -85,12 +113,13 @@ func (c *Config) LoadEnvs(configPath string) error {
 
 		defer fileConfig.Close()
 
-		writeKeys(fileConfig, "", "")
+		writeConfig(fileConfig, "", "", false)
 	}
 
 	c.setConfigPath(configPath)
 	c.setOpenAIKey(e.OpenAIKey)
 	c.setGeminiKey(e.GeminiKey)
+	c.SetAllowEdit(e.AllowEdit, false)
 	return nil
 }
 
@@ -119,10 +148,9 @@ func (c *Config) ConfigKey(reader io.Reader) error {
 
 	fmt.Print("Write your Gemini Key: ")
 	fmt.Fscanf(reader, "%s\n", &useInputGemini)
-
 	c.setGeminiKey(useInputGemini)
 
-	if err = writeKeys(fileConfig, c.gemini_key, c.open_ai_key); err != nil {
+	if err = writeConfig(fileConfig, c.gemini_key, c.open_ai_key, c.allow_edit); err != nil {
 		return err
 	}
 
@@ -140,10 +168,11 @@ func convertJSON(data envStruct) ([]byte, error) {
 	return jsonByte, nil
 }
 
-func writeKeys(f *os.File, geminiV, openAIV string) error {
+func writeConfig(f *os.File, geminiV, openAIV string, allowEdit bool) error {
 	data := envStruct{
 		GeminiKey: geminiV,
 		OpenAIKey: openAIV,
+		AllowEdit: allowEdit,
 	}
 
 	dataByte, err := convertJSON(data)
