@@ -7,6 +7,7 @@ type ConfigSpy struct {
 	IsConfigKeyCalled bool
 	geminiKey         string
 	openAIKey         string
+	allow_edit        bool
 }
 
 func (c *ConfigSpy) IsEmpty() bool {
@@ -37,6 +38,14 @@ func (c *ConfigSpy) GetOpenAIKey() string {
 
 func (c *ConfigSpy) SetOpenAiKey(i string) {
 	c.openAIKey = i
+}
+
+func (c *ConfigSpy) GetAllowEdit() bool {
+	return c.allow_edit
+}
+
+func (c *ConfigSpy) SetAllowEdit(v, rewrite bool) error {
+	return nil
 }
 
 func NewConfSpy() *ConfigSpy {
