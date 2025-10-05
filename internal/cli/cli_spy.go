@@ -5,23 +5,23 @@ import (
 	"log"
 
 	c "github.com/eduardongomes/gcai/internal/config"
+	f "github.com/eduardongomes/gcai/internal/flags"
 )
 
 type CLISpy struct {
 	testPath string
 }
 
-func (cli *CLISpy) Run(config c.ConfigMethods, reader io.Reader) {
+func (cli *CLISpy) Run(f f.Flags, config c.ConfigMethods, reader io.Reader) {
 
 	if err := config.LoadEnvs(cli.testPath); err != nil {
 		log.Fatal(err)
 	}
 
-	r := config.IsEmpty()
-
-	if r {
+	if config.IsEmpty() || f.OpenConfig {
 		config.ConfigKey(reader)
 	}
+
 }
 
 func NewCLISpy() *CLISpy {
