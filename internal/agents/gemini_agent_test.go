@@ -104,7 +104,7 @@ func TestGeminiAgent(t *testing.T) {
 
 	})
 
-	t.Run("", func(t *testing.T) {
+	t.Run("[Edit] Should edit commit", func(t *testing.T) {
 		mock := l.NewMockReader()
 		agent := &GeminiAgent{
 			newReader: func() (l.LineReader, error) {
