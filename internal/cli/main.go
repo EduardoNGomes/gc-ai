@@ -13,18 +13,19 @@ import (
 	"github.com/eduardongomes/gcai/internal/agents"
 	"github.com/eduardongomes/gcai/internal/config"
 	c "github.com/eduardongomes/gcai/internal/config"
+	f "github.com/eduardongomes/gcai/internal/flags"
 )
 
 type CLI struct{}
 
 type CLIMethdos interface {
-	Run(openConfig bool, c c.ConfigMethods, a agents.AgentMethods, r io.Reader)
+	Run(f f.Flags, c c.ConfigMethods, a agents.AgentMethods, r io.Reader)
 }
 
 //go:embed .config.json
 var embeddedConfig []byte
 
-func (cli *CLI) Run(openConfig bool, c config.ConfigMethods, a agents.AgentMethods, reader io.Reader) {
+func (cli *CLI) Run(f f.Flags, c config.ConfigMethods, a agents.AgentMethods, reader io.Reader) {
 
 	home, err := os.UserHomeDir()
 
@@ -50,10 +51,23 @@ func (cli *CLI) Run(openConfig bool, c config.ConfigMethods, a agents.AgentMetho
 		log.Fatal(err)
 	}
 
-	r := c.IsEmpty()
+	if c.IsEmpty() || f.OpenConfig {
+		if err := c.ConfigKey(reader); err != nil {
+			log.Fatal(err)
+		}
+	}
 
-	if r == true || openConfig {
-		c.ConfigKey(reader)
+	if f.OpenConfig {
+		fmt.Print("✅ Key saved")
+		return
+	}
+
+	if f.AlterEditConfig != nil {
+		if err := c.SetAllowEdit(*f.AlterEditConfig, true); err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("✅ Config changes applied successfully.")
+		return
 	}
 
 	msg, err := a.GetCommit(c)
@@ -67,6 +81,13 @@ func (cli *CLI) Run(openConfig bool, c config.ConfigMethods, a agents.AgentMetho
 			fmt.Println(err)
 			return
 		default:
+			log.Fatal(err)
+		}
+	}
+
+	if c.GetAllowEdit() || f.EditCommit {
+		msg, err = a.Edit(msg)
+		if err != nil {
 			log.Fatal(err)
 		}
 	}
