@@ -56,7 +56,7 @@ func (c *Config) GetAllowEdit() bool {
 func (c *Config) SetAllowEdit(v, rewrite bool) error {
 	c.allow_edit = v
 
-	if rewrite == true {
+	if rewrite {
 		fileConfig, err := os.OpenFile(c.configPath, os.O_RDWR, 0)
 
 		if err != nil {

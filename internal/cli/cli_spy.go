@@ -19,7 +19,7 @@ func (cli *CLISpy) Run(config c.ConfigMethods, reader io.Reader) {
 
 	r := config.IsEmpty()
 
-	if r == true {
+	if r {
 		config.ConfigKey(reader)
 	}
 }
