@@ -14,6 +14,7 @@ import (
 
 type GeminiAgent struct {
 	newReader func() (l.LineReader, error)
+	wasEdit   bool
 }
 
 func (agent *GeminiAgent) GetCommit(config config.ConfigMethods) (string, error) {
@@ -51,8 +52,6 @@ func (agent *GeminiAgent) GetCommit(config config.ConfigMethods) (string, error)
 		return "", fmt.Errorf("error on generate content %w", err)
 	}
 
-	fmt.Println(result.Text())
-
 	return result.Text(), nil
 }
 
@@ -86,6 +85,12 @@ func (agent *GeminiAgent) MakeCommit(msg string) error {
 		return fmt.Errorf("Erro on make commit: %v", err)
 	}
 
+	if !agent.wasEdit {
+		fmt.Println(msg)
+	}
+
+	agent.wasEdit = false
+
 	return nil
 }
 
@@ -97,11 +102,15 @@ func (agent *GeminiAgent) Edit(msg string) (string, error) {
 	}
 	defer rl.Close()
 
+	fmt.Println("Please edit your commit message below, or press Enter to keep it unchanged:")
+
 	rl.WriteStdin([]byte(msg))
 	line, err := rl.Readline()
 	if err != nil {
 		return "", fmt.Errorf("error reading line: %v", err)
 	}
+
+	agent.wasEdit = true
 
 	return line, nil
 }
@@ -111,5 +120,6 @@ func NewGeminiAgent() *GeminiAgent {
 		newReader: func() (l.LineReader, error) {
 			return readline.New("")
 		},
+		wasEdit: false,
 	}
 }
