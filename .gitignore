@@ -1,4 +1,5 @@
 .env
 .config.json
-./internal/config/.config-test-*.json
+.config-test-*.json
 coverage.out
+./internal/config/.config-test-*.json
