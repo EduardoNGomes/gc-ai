@@ -1,6 +1,6 @@
 package providers
 
-import "github.com/rrossmiller/gocliselect"
+import "github.com/manifoldco/promptui"
 
 type Menu interface {
 	AddItem(label, value string)
@@ -8,19 +8,34 @@ type Menu interface {
 }
 
 type ShellMenu struct {
-	menu *gocliselect.Menu
+	title string
+	items []string
 }
 
 func NewShellMenu(title string) *ShellMenu {
-	shell := &ShellMenu{menu: gocliselect.NewMenu(title)}
-	shell.menu.VimKeys = true
-	return shell
+	return &ShellMenu{
+		title: title,
+		items: []string{},
+	}
 }
 
 func (m *ShellMenu) AddItem(label, value string) {
-	m.menu.AddItem(label, value)
+	m.items = append(m.items, value)
 }
 
 func (m *ShellMenu) Display() string {
-	return m.menu.Display()
+	prompt := promptui.Select{
+		HideHelp:  true,
+		Label:     m.title,
+		Items:     m.items,
+		IsVimMode: true,
+		Size:      3,
+	}
+
+	_, result, err := prompt.Run()
+	if err != nil {
+		return ""
+	}
+
+	return result
 }

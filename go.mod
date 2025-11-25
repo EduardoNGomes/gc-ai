@@ -4,6 +4,7 @@ go 1.25
 
 require (
 	github.com/chzyer/readline v1.5.1
+	github.com/manifoldco/promptui v0.9.0
 	github.com/rrossmiller/gocliselect v0.0.0-20230117212226-9ac8f3f62df9
 	google.golang.org/genai v1.23.0
 )
