@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/eduardongomes/gcai/errs"
+	"github.com/eduardongomes/gcai/internal/providers"
 )
 
 type Config struct {
@@ -27,7 +28,7 @@ var e envStruct
 type ConfigMethods interface {
 	LoadEnvs(configPath string) error
 	IsEmpty() bool
-	ConfigKey(io.Reader) error
+	ConfigKey(io.Reader, providers.AgentOptions) error
 	GetGeminiKey() string
 	GetOpenAIKey() string
 	GetAllowEdit() bool
@@ -123,7 +124,7 @@ func (c *Config) LoadEnvs(configPath string) error {
 	return nil
 }
 
-func (c *Config) ConfigKey(reader io.Reader) error {
+func (c *Config) ConfigKey(reader io.Reader, agentOptions providers.AgentOptions) error {
 	fileConfig, err := os.OpenFile(c.configPath, os.O_RDWR, 0)
 
 	if err != nil {
@@ -142,13 +143,26 @@ func (c *Config) ConfigKey(reader io.Reader) error {
 
 	var useInputOpenAi, useInputGemini string
 
-	fmt.Print("Write your OpenAI Key: ")
-	fmt.Fscanf(reader, "%s\n", &useInputOpenAi)
-	c.setOpenAIKey(useInputOpenAi)
+	option := agentOptions.SelectedOption()
 
-	fmt.Print("Write your Gemini Key: ")
-	fmt.Fscanf(reader, "%s\n", &useInputGemini)
-	c.setGeminiKey(useInputGemini)
+	switch option {
+	case providers.OPEN_AI:
+		{
+			fmt.Print("Write your OpenAI Key: ")
+			fmt.Fscanf(reader, "%s\n", &useInputOpenAi)
+			c.setOpenAIKey(useInputOpenAi)
+		}
+	case providers.GEMINI:
+		{
+			fmt.Print("Write your Gemini Key: ")
+			fmt.Fscanf(reader, "%s\n", &useInputGemini)
+			c.setGeminiKey(useInputGemini)
+		}
+	default:
+		{
+			return errs.InvalidAgentSelected
+		}
+	}
 
 	if err = writeConfig(fileConfig, c.gemini_key, c.open_ai_key, c.allow_edit); err != nil {
 		return err
