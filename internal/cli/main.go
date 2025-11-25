@@ -14,6 +14,7 @@ import (
 	"github.com/eduardongomes/gcai/internal/config"
 	c "github.com/eduardongomes/gcai/internal/config"
 	f "github.com/eduardongomes/gcai/internal/flags"
+	"github.com/eduardongomes/gcai/internal/providers"
 )
 
 type CLI struct{}
@@ -51,8 +52,11 @@ func (cli *CLI) Run(f f.Flags, c config.ConfigMethods, a agents.AgentMethods, re
 		log.Fatal(err)
 	}
 
+	menu := providers.NewShellMenu("Choose your agent")
+	agentsOptions := providers.NewSelectAgent(menu)
+
 	if c.IsEmpty() || f.OpenConfig {
-		if err := c.ConfigKey(reader); err != nil {
+		if err := c.ConfigKey(reader, agentsOptions); err != nil {
 			log.Fatal(err)
 		}
 	}
