@@ -17,16 +17,19 @@ import (
 	"github.com/eduardongomes/gcai/internal/providers"
 )
 
-type CLI struct{}
+type CLI struct {
+	geminiAgent agents.AgentMethods
+	openaiAgent agents.AgentMethods
+}
 
 type CLIMethdos interface {
-	Run(f f.Flags, c c.ConfigMethods, a agents.AgentMethods, r io.Reader)
+	Run(f f.Flags, c c.ConfigMethods, r io.Reader)
 }
 
 //go:embed .config.json
 var embeddedConfig []byte
 
-func (cli *CLI) Run(f f.Flags, c config.ConfigMethods, a agents.AgentMethods, reader io.Reader) {
+func (cli *CLI) Run(f f.Flags, c config.ConfigMethods, reader io.Reader) {
 
 	home, err := os.UserHomeDir()
 
@@ -74,7 +77,9 @@ func (cli *CLI) Run(f f.Flags, c config.ConfigMethods, a agents.AgentMethods, re
 		return
 	}
 
-	msg, err := a.GetCommit(c)
+	var agent agents.AgentMethods
+
+	msg, err := agent.GetCommit(c)
 
 	if err != nil {
 		switch {
@@ -90,17 +95,23 @@ func (cli *CLI) Run(f f.Flags, c config.ConfigMethods, a agents.AgentMethods, re
 	}
 
 	if c.GetAllowEdit() || f.EditCommit {
-		msg, err = a.Edit(msg)
+		msg, err = agent.Edit(msg)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	if err := a.MakeCommit(msg); err != nil {
+	if err := agent.MakeCommit(msg); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func NewCLI() *CLI {
-	return &CLI{}
+func NewCLI(cfg struct {
+	Gemini agents.AgentMethods
+	OpenAI agents.AgentMethods
+}) *CLI {
+	return &CLI{
+		geminiAgent: cfg.Gemini,
+		openaiAgent: cfg.OpenAI,
+	}
 }
