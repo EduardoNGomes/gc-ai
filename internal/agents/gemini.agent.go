@@ -79,7 +79,7 @@ func (agent *GeminiAgent) GetDiff() (string, error) {
 
 func (agent *GeminiAgent) MakeCommit(msg string) error {
 
-	r := execCommand("git", "commit", "-m", msg, "--no-verify")
+	r := execCommand("git", "commit", "-m", msg)
 
 	if _, err := r.Output(); err != nil {
 		return fmt.Errorf("Erro on make commit: %v", err)
