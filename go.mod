@@ -2,18 +2,23 @@ module github.com/eduardongomes/gcai
 
 go 1.25
 
-require google.golang.org/genai v1.23.0
+require (
+	github.com/chzyer/readline v1.5.1
+	github.com/rrossmiller/gocliselect v0.0.0-20230117212226-9ac8f3f62df9
+	google.golang.org/genai v1.23.0
+)
 
 require (
 	cloud.google.com/go v0.116.0 // indirect
 	cloud.google.com/go/auth v0.9.3 // indirect
 	cloud.google.com/go/compute/metadata v0.5.0 // indirect
-	github.com/chzyer/readline v1.5.1 // indirect
+	github.com/buger/goterm v1.0.3 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/s2a-go v0.1.8 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
+	github.com/pkg/term v1.1.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/crypto v0.27.0 // indirect
 	golang.org/x/net v0.29.0 // indirect
