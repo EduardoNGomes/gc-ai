@@ -17,4 +17,6 @@ var EmptyKeyError = errors.New("Cannot make commit without AI Key")
 
 var EmptyDiffError = errors.New("Cannot make commit without any diff")
 
+var InvalidAgentSelected = errors.New("Invalid Agent selected")
+
 var InvalidJson *json.UnmarshalTypeError
