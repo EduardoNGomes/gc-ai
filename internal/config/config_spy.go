@@ -1,6 +1,10 @@
 package config
 
-import "io"
+import (
+	"io"
+
+	"github.com/eduardongomes/gcai/internal/providers"
+)
 
 type ConfigSpy struct {
 	IsEmptyCalled     bool
@@ -20,7 +24,7 @@ func (c *ConfigSpy) LoadEnvs(path string) error {
 	return nil
 }
 
-func (c *ConfigSpy) ConfigKey(io.Reader) error {
+func (c *ConfigSpy) ConfigKey(io.Reader, providers.AgentOptions) error {
 	c.IsConfigKeyCalled = true
 	return nil
 }

@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/eduardongomes/gcai/errs"
+	"github.com/eduardongomes/gcai/internal/providers"
 )
 
 func TestConfig(t *testing.T) {
@@ -104,10 +105,9 @@ func TestConfig(t *testing.T) {
 		checkAssert(t, r, value)
 	})
 
-	t.Run("Should register user input", func(t *testing.T) {
-		openAI := "openAIKey"
+	t.Run("Should register user input GEMINI", func(t *testing.T) {
 		gemini := "geminiKey"
-		input := bytes.NewBufferString(fmt.Sprintf("%s\n%s\n", openAI, gemini))
+		input := bytes.NewBufferString(fmt.Sprintf("%s\n", gemini))
 
 		cpath := createTestPath(t)
 		createTestFile(t, cpath, "", "")
@@ -116,9 +116,33 @@ func TestConfig(t *testing.T) {
 		if err := c.LoadEnvs(cpath); err != nil {
 			t.Errorf("Error on load env ->  %v", err)
 		}
-		c.ConfigKey(input)
+
+		agents := providers.NewSelectAgentSpy()
+		agents.SetAgent(providers.GEMINI)
+
+		c.ConfigKey(input, agents)
 
 		checkAssert(t, c.GetGeminiKey(), gemini)
+
+	})
+
+	t.Run("Should register user input OPEN AI", func(t *testing.T) {
+		openAI := "openAIKey"
+		input := bytes.NewBufferString(fmt.Sprintf("%s\n", openAI))
+
+		cpath := createTestPath(t)
+		createTestFile(t, cpath, "", "")
+		c := NewConfig()
+
+		if err := c.LoadEnvs(cpath); err != nil {
+			t.Errorf("Error on load env ->  %v", err)
+		}
+
+		agents := providers.NewSelectAgentSpy()
+		agents.SetAgent(providers.OPEN_AI)
+
+		c.ConfigKey(input, agents)
+
 		checkAssert(t, c.GetOpenAIKey(), openAI)
 	})
 
