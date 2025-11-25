@@ -1,10 +1,9 @@
 package providers
 
-import "github.com/rrossmiller/gocliselect"
-
 type Provider string
 
 type SelectAgent struct {
+	menu   Menu
 	option Provider
 }
 
@@ -18,17 +17,13 @@ type AgentOptions interface {
 }
 
 func (s *SelectAgent) SelectedOption() Provider {
-	menu := gocliselect.NewMenu("Chose a Agent")
-	menu.VimKeys = true
+	s.menu.AddItem(string(OPEN_AI), string(OPEN_AI))
+	s.menu.AddItem(string(GEMINI), string(GEMINI))
 
-	menu.AddItem(string(OPEN_AI), string(OPEN_AI))
-	menu.AddItem(string(GEMINI), string(GEMINI))
-
-	choice := menu.Display()
-
+	choice := s.menu.Display()
 	return Provider(choice)
 }
 
-func NewSelectAgent() *SelectAgent {
-	return &SelectAgent{}
+func NewSelectAgent(m Menu) *SelectAgent {
+	return &SelectAgent{menu: m}
 }
