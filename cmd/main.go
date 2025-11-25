@@ -32,8 +32,17 @@ func main() {
 	reader := bufio.NewReader(os.Stdin)
 
 	conf := config.NewConfig()
-	cli := cli.NewCLI()
+
 	geminiAgent := agents.NewGeminiAgent()
+	openAIAgent := agents.NewOpenAIAgent()
+
+	cli := cli.NewCLI(struct {
+		Gemini agents.AgentMethods
+		OpenAI agents.AgentMethods
+	}{
+		Gemini: geminiAgent,
+		OpenAI: openAIAgent,
+	})
 
 	flags := flags.Flags{
 		OpenConfig:      *openConfig,
@@ -41,5 +50,5 @@ func main() {
 		AlterEditConfig: alterConfig,
 	}
 
-	cli.Run(flags, conf, geminiAgent, reader)
+	cli.Run(flags, conf, reader)
 }
