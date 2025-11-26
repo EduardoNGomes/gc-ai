@@ -25,11 +25,10 @@ func (m *ShellMenu) AddItem(label, value string) {
 
 func (m *ShellMenu) Display() string {
 	prompt := promptui.Select{
-		HideHelp:  true,
-		Label:     m.title,
-		Items:     m.items,
-		IsVimMode: true,
-		Size:      3,
+		HideHelp: true,
+		Label:    m.title,
+		Items:    m.items,
+		Size:     3,
 	}
 
 	_, result, err := prompt.Run()
