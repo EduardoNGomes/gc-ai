@@ -15,6 +15,7 @@ import (
 func main() {
 	openConfig := flag.Bool("config", false, "Enable new config keys")
 	editCommit := flag.Bool("e", false, "Edit Commit Message")
+	onlyShowCommit := flag.Bool("o", false, "Only show Commit Message")
 
 	alterEditConfig := flag.String("edit", "", "Alter Configuration to edit commits(true/false)")
 
@@ -58,6 +59,7 @@ func main() {
 	flags := flags.Flags{
 		OpenConfig:      *openConfig,
 		EditCommit:      *editCommit,
+		OnlyShowCommit:  *onlyShowCommit,
 		AlterEditConfig: alterConfig,
 		AlterAgent:      alterAgent,
 	}
