@@ -14,6 +14,9 @@ import (
 )
 
 func TestConfig(t *testing.T) {
+	allowEdit := "n"
+	var output bytes.Buffer
+
 	t.Run("Shoud return Gemini Key", func(t *testing.T) {
 		key := "key"
 		conf := &Config{open_ai_key: "", gemini_key: key}
@@ -78,7 +81,7 @@ func TestConfig(t *testing.T) {
 		cpath := createTestPath(t)
 		conf := NewConfig()
 
-		createTestFile(t, cpath, "", "")
+		createTestFile(t, cpath, "", "", providers.GEMINI)
 
 		if err := conf.LoadEnvs(cpath); err != nil {
 			t.Errorf("Error on load env ->  %v", err)
@@ -93,7 +96,7 @@ func TestConfig(t *testing.T) {
 		value := "Key"
 		cpath := createTestPath(t)
 
-		createTestFile(t, cpath, value, value)
+		createTestFile(t, cpath, value, value, providers.GEMINI)
 
 		conf := NewConfig()
 
@@ -105,12 +108,12 @@ func TestConfig(t *testing.T) {
 		checkAssert(t, r, value)
 	})
 
-	t.Run("Should register user input GEMINI", func(t *testing.T) {
+	t.Run("[ConfigGemini]Should register user input GEMINI", func(t *testing.T) {
 		gemini := "geminiKey"
-		input := bytes.NewBufferString(fmt.Sprintf("%s\n", gemini))
+		input := bytes.NewBufferString(fmt.Sprintf("%s\n%s", gemini, allowEdit))
 
 		cpath := createTestPath(t)
-		createTestFile(t, cpath, "", "")
+		createTestFile(t, cpath, "", "", providers.GEMINI)
 		c := NewConfig()
 
 		if err := c.LoadEnvs(cpath); err != nil {
@@ -120,18 +123,18 @@ func TestConfig(t *testing.T) {
 		agents := providers.NewSelectAgentSpy()
 		agents.SetAgent(providers.GEMINI)
 
-		c.ConfigKey(input, agents)
+		c.ConfigKey(input, agents, &output)
 
 		checkAssert(t, c.GetGeminiKey(), gemini)
 
 	})
 
-	t.Run("Should register user input OPEN AI", func(t *testing.T) {
+	t.Run("[ConfigOpenAI]Should register user input OPEN AI", func(t *testing.T) {
 		openAI := "openAIKey"
-		input := bytes.NewBufferString(fmt.Sprintf("%s\n", openAI))
+		input := bytes.NewBufferString(fmt.Sprintf("%s\n%s", openAI, allowEdit))
 
 		cpath := createTestPath(t)
-		createTestFile(t, cpath, "", "")
+		createTestFile(t, cpath, "", "", providers.OPEN_AI)
 		c := NewConfig()
 
 		if err := c.LoadEnvs(cpath); err != nil {
@@ -140,8 +143,7 @@ func TestConfig(t *testing.T) {
 
 		agents := providers.NewSelectAgentSpy()
 		agents.SetAgent(providers.OPEN_AI)
-
-		c.ConfigKey(input, agents)
+		c.ConfigKey(input, agents, &output)
 
 		checkAssert(t, c.GetOpenAIKey(), openAI)
 	})
@@ -163,11 +165,12 @@ func TestConfig(t *testing.T) {
 		c := NewConfig()
 
 		cpath := createTestPath(t)
-		createTestFile(t, cpath, "", "")
+		createTestFile(t, cpath, "", "", providers.GEMINI)
 
 		if err := c.LoadEnvs(cpath); err != nil {
 			t.Errorf("Error on load env ->  %v", err)
 		}
+
 		firstValue := c.GetAllowEdit()
 
 		if firstValue != false {
@@ -198,8 +201,8 @@ func TestConfig(t *testing.T) {
 		if r != newValue {
 			t.Errorf("Err on set new config, expect %t receive %t ", newValue, r)
 		}
-
 	})
+
 }
 
 func checkAssert(t *testing.T, r, e string) {
@@ -219,7 +222,7 @@ func createTestPath(t *testing.T) string {
 	return fmt.Sprintf("./.config-test-%s.json", id)
 }
 
-func createTestFile(t *testing.T, p, geminiV, openAIV string) {
+func createTestFile(t *testing.T, p, geminiV, openAIV string, provider providers.Provider) {
 	f, err := os.Create(p)
 
 	if err != nil {
@@ -228,7 +231,7 @@ func createTestFile(t *testing.T, p, geminiV, openAIV string) {
 
 	defer f.Close()
 
-	if err = writeConfig(f, geminiV, openAIV, false); err != nil {
+	if err = writeConfig(f, geminiV, openAIV, false, provider); err != nil {
 		t.Error(err)
 	}
 }
