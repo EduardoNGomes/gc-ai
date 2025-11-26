@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
+	"strings"
 
 	"github.com/eduardongomes/gcai/errs"
 	"github.com/eduardongomes/gcai/internal/providers"
@@ -15,12 +17,14 @@ type Config struct {
 	gemini_key  string
 	configPath  string
 	allow_edit  bool
+	agent       providers.Provider
 }
 
 type envStruct struct {
-	GeminiKey string `json:"geminiKey"`
-	OpenAIKey string `json:"openAIAKey"`
-	AllowEdit bool   `json:"allowEdit"`
+	GeminiKey string             `json:"geminiKey"`
+	OpenAIKey string             `json:"openAIAKey"`
+	AllowEdit bool               `json:"allowEdit"`
+	Agent     providers.Provider `json:"agent"`
 }
 
 var e envStruct
@@ -28,11 +32,13 @@ var e envStruct
 type ConfigMethods interface {
 	LoadEnvs(configPath string) error
 	IsEmpty() bool
-	ConfigKey(io.Reader, providers.AgentOptions) error
+	ConfigKey(io.Reader, providers.AgentOptions, io.Writer) error
 	GetGeminiKey() string
 	GetOpenAIKey() string
 	GetAllowEdit() bool
 	SetAllowEdit(v, rewrite bool) error
+	GetAgent() providers.Provider
+	setAgent(providers.Provider)
 }
 
 func NewConfig() *Config {
@@ -66,7 +72,7 @@ func (c *Config) SetAllowEdit(v, rewrite bool) error {
 
 		defer fileConfig.Close()
 
-		if err = writeConfig(fileConfig, c.gemini_key, c.open_ai_key, c.allow_edit); err != nil {
+		if err = writeConfig(fileConfig, c.GetGeminiKey(), c.GetOpenAIKey(), c.GetAllowEdit(), c.GetAgent()); err != nil {
 			return err
 		}
 	}
@@ -94,6 +100,14 @@ func (c *Config) setConfigPath(v string) {
 	c.configPath = v
 }
 
+func (c *Config) GetAgent() providers.Provider {
+	return c.agent
+}
+
+func (c *Config) setAgent(v providers.Provider) {
+	c.agent = v
+}
+
 func (c *Config) LoadEnvs(configPath string) error {
 
 	f, err := os.ReadFile(configPath)
@@ -114,17 +128,18 @@ func (c *Config) LoadEnvs(configPath string) error {
 
 		defer fileConfig.Close()
 
-		writeConfig(fileConfig, "", "", false)
+		writeConfig(fileConfig, "", "", false, providers.GEMINI)
 	}
 
 	c.setConfigPath(configPath)
 	c.setOpenAIKey(e.OpenAIKey)
 	c.setGeminiKey(e.GeminiKey)
 	c.SetAllowEdit(e.AllowEdit, false)
+	c.setAgent(e.Agent)
 	return nil
 }
 
-func (c *Config) ConfigKey(reader io.Reader, agentOptions providers.AgentOptions) error {
+func (c *Config) ConfigKey(reader io.Reader, agentOptions providers.AgentOptions, outputWriter io.Writer) error {
 	fileConfig, err := os.OpenFile(c.configPath, os.O_RDWR, 0)
 
 	if err != nil {
@@ -141,22 +156,24 @@ func (c *Config) ConfigKey(reader io.Reader, agentOptions providers.AgentOptions
 
 	json.Unmarshal(f, &e)
 
-	var useInputOpenAi, useInputGemini string
+	var userInputOpenAi, userInputGemini, userInputAllowEdit string
 
-	option := agentOptions.SelectedOption()
+	agentSelected := agentOptions.SelectedOption()
 
-	switch option {
+	switch agentSelected {
 	case providers.OPEN_AI:
 		{
-			fmt.Print("Write your OpenAI Key: ")
-			fmt.Fscanf(reader, "%s\n", &useInputOpenAi)
-			c.setOpenAIKey(useInputOpenAi)
+			fmt.Fprint(outputWriter, "Write your OpenAI Key: ")
+			fmt.Fscanf(reader, "%s\n", &userInputOpenAi)
+			c.setOpenAIKey(userInputOpenAi)
+			c.setAgent(providers.OPEN_AI)
 		}
 	case providers.GEMINI:
 		{
-			fmt.Print("Write your Gemini Key: ")
-			fmt.Fscanf(reader, "%s\n", &useInputGemini)
-			c.setGeminiKey(useInputGemini)
+			fmt.Fprint(outputWriter, "Write your Gemini Key: ")
+			fmt.Fscanf(reader, "%s\n", &userInputGemini)
+			c.setGeminiKey(userInputGemini)
+			c.setAgent(providers.GEMINI)
 		}
 	default:
 		{
@@ -164,7 +181,30 @@ func (c *Config) ConfigKey(reader io.Reader, agentOptions providers.AgentOptions
 		}
 	}
 
-	if err = writeConfig(fileConfig, c.gemini_key, c.open_ai_key, c.allow_edit); err != nil {
+	options := []string{"y", "Y", "true", "n", "N", "false"}
+
+	for !slices.Contains(options, userInputAllowEdit) {
+
+		fmt.Fprintf(outputWriter, "Enable edit before make commit? %s ", "(y/n)")
+		fmt.Fscanf(reader, "%s\n", &userInputAllowEdit)
+
+		switch strings.ToLower(userInputAllowEdit) {
+		case "y", "true":
+			{
+				c.SetAllowEdit(true, false)
+			}
+		case "n", "false":
+			{
+				c.SetAllowEdit(false, false)
+			}
+		default:
+			{
+				fmt.Fprintln(outputWriter, errs.InvalidEntryValue)
+			}
+		}
+	}
+
+	if err = writeConfig(fileConfig, c.GetGeminiKey(), c.GetOpenAIKey(), c.GetAllowEdit(), c.GetAgent()); err != nil {
 		return err
 	}
 
@@ -182,11 +222,12 @@ func convertJSON(data envStruct) ([]byte, error) {
 	return jsonByte, nil
 }
 
-func writeConfig(f *os.File, geminiV, openAIV string, allowEdit bool) error {
+func writeConfig(f *os.File, geminiV, openAIV string, allowEdit bool, agent providers.Provider) error {
 	data := envStruct{
 		GeminiKey: geminiV,
 		OpenAIKey: openAIV,
 		AllowEdit: allowEdit,
+		Agent:     agent,
 	}
 
 	dataByte, err := convertJSON(data)
