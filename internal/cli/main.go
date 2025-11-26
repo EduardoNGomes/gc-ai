@@ -77,6 +77,25 @@ func (cli *CLI) Run(f f.Flags, c config.ConfigMethods, reader io.Reader) {
 		return
 	}
 
+	if f.AlterAgent != nil {
+		switch *f.AlterAgent {
+		case "gemini":
+			{
+				if err := c.SetAgent(providers.GEMINI, true); err != nil {
+					log.Fatal(err)
+				}
+			}
+		case "openai":
+			{
+				if err := c.SetAgent(providers.OPEN_AI, true); err != nil {
+					log.Fatal(err)
+				}
+			}
+		}
+		fmt.Println("✅ New agent seleted")
+		return
+	}
+
 	var agent agents.AgentMethods
 
 	switch c.GetAgent() {
