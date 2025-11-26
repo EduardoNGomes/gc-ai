@@ -20,10 +20,17 @@ func TestCLI(t *testing.T) {
 
 	t.Run("Should call config method on start method when config is empty", func(t *testing.T) {
 		confSpy := c.NewConfSpy()
-		cli := NewCLI()
 		agent := agents.NewMockAgent()
 
-		cli.Run(flags, confSpy, agent, &bytes.Buffer{})
+		cli := NewCLI(struct {
+			Gemini agents.AgentMethods
+			OpenAI agents.AgentMethods
+		}{
+			Gemini: agent,
+			OpenAI: agent,
+		})
+
+		cli.Run(flags, confSpy, &bytes.Buffer{})
 
 		expect := true
 		result := confSpy.IsEmptyCalled
@@ -34,11 +41,19 @@ func TestCLI(t *testing.T) {
 	})
 
 	t.Run("Should call config key if confif is empty", func(t *testing.T) {
-		cli := NewCLI()
 		confSpy := c.NewConfSpy()
 
 		agent := agents.NewMockAgent()
-		cli.Run(flags, confSpy, agent, &bytes.Buffer{})
+
+		cli := NewCLI(struct {
+			Gemini agents.AgentMethods
+			OpenAI agents.AgentMethods
+		}{
+			Gemini: agent,
+			OpenAI: agent,
+		})
+
+		cli.Run(flags, confSpy, &bytes.Buffer{})
 		expect := true
 		result := confSpy.IsConfigKeyCalled
 
@@ -48,16 +63,24 @@ func TestCLI(t *testing.T) {
 	})
 
 	t.Run("[Alter Config] should alter config be called", func(t *testing.T) {
-		cli := NewCLI()
 		conf := c.NewConfSpy()
-		reader := &bytes.Buffer{}
 		agent := agents.NewMockAgent()
+
+		cli := NewCLI(struct {
+			Gemini agents.AgentMethods
+			OpenAI agents.AgentMethods
+		}{
+			Gemini: agent,
+			OpenAI: agent,
+		})
+
+		reader := &bytes.Buffer{}
 		trueVal := true
 		flags := f.Flags{
 			AlterEditConfig: &trueVal,
 		}
 
-		cli.Run(flags, conf, agent, reader)
+		cli.Run(flags, conf, reader)
 
 		if conf.SetAllowEditCall == nil || *conf.SetAllowEditCall != true {
 			t.Errorf("Expected SetAllowEdit to be called with true")
@@ -70,11 +93,16 @@ func TestCLI(t *testing.T) {
 	})
 
 	t.Run("[Edit Commit] shoul call edit commit", func(t *testing.T) {
-		cli := NewCLI()
-
+		agent := agents.NewMockAgent()
+		cli := NewCLI(struct {
+			Gemini agents.AgentMethods
+			OpenAI agents.AgentMethods
+		}{
+			Gemini: agent,
+			OpenAI: agent,
+		})
 		conf := c.NewConfSpy()
 		reader := &bytes.Buffer{}
-		agent := agents.NewMockAgent()
 
 		flags := f.Flags{
 			OpenConfig:      false,
@@ -82,7 +110,7 @@ func TestCLI(t *testing.T) {
 			AlterEditConfig: nil,
 		}
 
-		cli.Run(flags, conf, agent, reader)
+		cli.Run(flags, conf, reader)
 
 		if !agent.GetCommitCalled {
 			t.Errorf("Expected GetCommit to be called")
