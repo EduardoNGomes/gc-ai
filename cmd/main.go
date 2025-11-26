@@ -17,6 +17,7 @@ func main() {
 	editCommit := flag.Bool("e", false, "Edit Commit Message")
 
 	alterEditConfig := flag.String("edit", "", "Alter Configuration to edit commits(true/false)")
+
 	alterAgentConfig := flag.String("agent", "", "Alter Agent to make commits(gemini/openai)")
 
 	flag.Parse()
@@ -32,12 +33,11 @@ func main() {
 	}
 
 	if *alterAgentConfig != "" {
-		if strings.ToLower(*alterEditConfig) == "gemini" || strings.ToLower(*alterEditConfig) == "openai" {
-			alterAgent = alterEditConfig
+		if strings.ToLower(*alterAgentConfig) == "gemini" || strings.ToLower(*alterAgentConfig) == "openai" {
+			alterAgent = alterAgentConfig
 		}
 	} else {
 		alterAgent = nil
-		alterConfig = nil
 	}
 
 	reader := bufio.NewReader(os.Stdin)
