@@ -115,6 +115,11 @@ func (cli *CLI) Run(f f.Flags, c config.ConfigMethods, reader io.Reader) {
 
 	msg, err := agent.GetCommit(c)
 
+	if f.OnlyShowCommit {
+		fmt.Println(msg)
+		return
+	}
+
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.EmptyKeyError):
