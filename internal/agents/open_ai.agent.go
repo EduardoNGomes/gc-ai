@@ -92,7 +92,7 @@ func (agent *OpenAIAgent) Edit(msg string) (string, error) {
 	}
 	defer rl.Close()
 
-	fmt.Println("Please edit your commit message below, or press Enter to keep it unchanged:")
+	fmt.Println("(OpenAI)Please edit your commit message below, or press Enter to keep it unchanged:")
 
 	rl.WriteStdin([]byte(msg))
 	line, err := rl.Readline()
