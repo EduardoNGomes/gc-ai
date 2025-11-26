@@ -12,6 +12,7 @@ type ConfigSpy struct {
 	geminiKey         string
 	openAIKey         string
 	allow_edit        bool
+	agent             providers.Provider
 	SetAllowEditCall  *bool
 }
 
@@ -24,7 +25,7 @@ func (c *ConfigSpy) LoadEnvs(path string) error {
 	return nil
 }
 
-func (c *ConfigSpy) ConfigKey(io.Reader, providers.AgentOptions) error {
+func (c *ConfigSpy) ConfigKey(io.Reader, providers.AgentOptions, io.Writer) error {
 	c.IsConfigKeyCalled = true
 	return nil
 }
@@ -54,9 +55,19 @@ func (c *ConfigSpy) SetAllowEdit(val bool, _ bool) error {
 	return nil
 }
 
+func (c *ConfigSpy) GetAgent() providers.Provider {
+	return c.agent
+}
+
+func (c *ConfigSpy) setAgent(v providers.Provider) {
+	c.agent = v
+}
+
 func NewConfSpy() *ConfigSpy {
 	return &ConfigSpy{
-		geminiKey: "test_key",
-		openAIKey: "test_key",
+		geminiKey:  "test_key",
+		openAIKey:  "test_key",
+		agent:      providers.GEMINI,
+		allow_edit: false,
 	}
 }
