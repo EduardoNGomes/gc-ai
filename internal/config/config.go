@@ -38,7 +38,7 @@ type ConfigMethods interface {
 	GetAllowEdit() bool
 	SetAllowEdit(v, rewrite bool) error
 	GetAgent() providers.Provider
-	setAgent(providers.Provider)
+	SetAgent(providers.Provider, bool) error
 }
 
 func NewConfig() *Config {
@@ -104,8 +104,24 @@ func (c *Config) GetAgent() providers.Provider {
 	return c.agent
 }
 
-func (c *Config) setAgent(v providers.Provider) {
+func (c *Config) SetAgent(v providers.Provider, rewrite bool) error {
 	c.agent = v
+
+	if rewrite {
+		fileConfig, err := os.OpenFile(c.configPath, os.O_RDWR, 0)
+
+		if err != nil {
+			return fmt.Errorf(errs.CannotOpenFileErr+" -> %w", err)
+		}
+
+		defer fileConfig.Close()
+
+		if err = writeConfig(fileConfig, c.GetGeminiKey(), c.GetOpenAIKey(), c.GetAllowEdit(), c.GetAgent()); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (c *Config) LoadEnvs(configPath string) error {
@@ -135,7 +151,7 @@ func (c *Config) LoadEnvs(configPath string) error {
 	c.setOpenAIKey(e.OpenAIKey)
 	c.setGeminiKey(e.GeminiKey)
 	c.SetAllowEdit(e.AllowEdit, false)
-	c.setAgent(e.Agent)
+	c.SetAgent(e.Agent, false)
 	return nil
 }
 
@@ -166,14 +182,14 @@ func (c *Config) ConfigKey(reader io.Reader, agentOptions providers.AgentOptions
 			fmt.Fprint(outputWriter, "Write your OpenAI Key: ")
 			fmt.Fscanf(reader, "%s\n", &userInputOpenAi)
 			c.setOpenAIKey(userInputOpenAi)
-			c.setAgent(providers.OPEN_AI)
+			c.SetAgent(providers.OPEN_AI, false)
 		}
 	case providers.GEMINI:
 		{
 			fmt.Fprint(outputWriter, "Write your Gemini Key: ")
 			fmt.Fscanf(reader, "%s\n", &userInputGemini)
 			c.setGeminiKey(userInputGemini)
-			c.setAgent(providers.GEMINI)
+			c.SetAgent(providers.GEMINI, false)
 		}
 	default:
 		{

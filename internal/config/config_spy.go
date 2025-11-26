@@ -59,8 +59,9 @@ func (c *ConfigSpy) GetAgent() providers.Provider {
 	return c.agent
 }
 
-func (c *ConfigSpy) setAgent(v providers.Provider) {
+func (c *ConfigSpy) SetAgent(v providers.Provider, r bool) error {
 	c.agent = v
+	return nil
 }
 
 func NewConfSpy() *ConfigSpy {
