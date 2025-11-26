@@ -59,13 +59,13 @@ func (cli *CLI) Run(f f.Flags, c config.ConfigMethods, reader io.Reader) {
 	agentsOptions := providers.NewSelectAgent(menu)
 
 	if c.IsEmpty() || f.OpenConfig {
-		if err := c.ConfigKey(reader, agentsOptions); err != nil {
+		if err := c.ConfigKey(reader, agentsOptions, os.Stdout); err != nil {
 			log.Fatal(err)
 		}
 	}
 
 	if f.OpenConfig {
-		fmt.Print("✅ Key saved")
+		fmt.Println("✅ Key saved")
 		return
 	}
 
@@ -78,6 +78,21 @@ func (cli *CLI) Run(f f.Flags, c config.ConfigMethods, reader io.Reader) {
 	}
 
 	var agent agents.AgentMethods
+
+	switch c.GetAgent() {
+	case providers.GEMINI:
+		{
+			agent = cli.geminiAgent
+		}
+	case providers.OPEN_AI:
+		{
+			agent = cli.openaiAgent
+		}
+	default:
+		{
+			log.Fatal(errs.InvalidAgentSelected)
+		}
+	}
 
 	msg, err := agent.GetCommit(c)
 
