@@ -19,4 +19,6 @@ var EmptyDiffError = errors.New("Cannot make commit without any diff")
 
 var InvalidAgentSelected = errors.New("Invalid Agent selected")
 
+var InvalidEntryValue = errors.New("Invalid entry value")
+
 var InvalidJson *json.UnmarshalTypeError
