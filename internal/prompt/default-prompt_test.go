@@ -6,8 +6,8 @@ import (
 )
 
 func TestDefaultPrompt(t *testing.T) {
-	result := NewDefaultPrompt().GetIntroduction()
 	t.Run("[GetIntroduction] Should return default introduction", func(t *testing.T) {
+		result := NewDefaultPrompt().GetIntroduction()
 		expected := INTRODUCTION
 		checkAssertString(t, result, expected)
 	})
