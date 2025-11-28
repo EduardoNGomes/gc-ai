@@ -41,10 +41,12 @@ func (agent *GeminiAgent) GetCommit(config config.ConfigMethods) (string, error)
 		return "", err
 	}
 
+	prompt := fmt.Sprintf("%s\nDIFF:\n%s", config.GetPrompt(), diff)
+
 	result, err := client.Models.GenerateContent(
 		ctx,
 		"gemini-2.5-flash-lite",
-		genai.Text(Prompt+diff),
+		genai.Text(prompt),
 		nil,
 	)
 
