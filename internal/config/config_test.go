@@ -151,9 +151,7 @@ func TestConfig(t *testing.T) {
 	t.Run("[SetAllowEdit] should alter edit config", func(t *testing.T) {
 		c := NewConfig()
 
-		if err := c.SetAllowEdit(true, false); err != nil {
-			t.Errorf("Err on set Key -> %v", err)
-		}
+		c.setAllowEdit(true)
 
 		r := c.GetAllowEdit()
 
@@ -179,9 +177,12 @@ func TestConfig(t *testing.T) {
 
 		newValue := true
 
-		if err := c.SetAllowEdit(newValue, true); err != nil {
-			t.Errorf("Err on set Key -> %v", err)
-		}
+		c.RewriteConfig(RewriteConfigOptions{
+			PromptType: nil,
+			Prompt:     nil,
+			AllowEdit:  &newValue,
+			Agent:      nil,
+		})
 		f, err := os.ReadFile(cpath)
 
 		if err != nil {
