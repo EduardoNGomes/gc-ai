@@ -1,5 +1,11 @@
 package prompt
 
+import (
+	"encoding/json"
+	"fmt"
+	"strings"
+)
+
 type PromptType string
 
 const (
@@ -19,6 +25,32 @@ type Prompt interface {
 	GetRules() []string
 	GetStructure() string
 	GetExamples() []string
-	ConvertToJSON() PromptJSON
-	ConvertToPromptString() string
+}
+
+func ConvertToJSON(p Prompt) ([]byte, error) {
+	data := PromptJSON{
+		Introduction: p.GetIntroduction(),
+		Rules:        p.GetRules(),
+		Structure:    p.GetStructure(),
+		Examples:     p.GetExamples(),
+	}
+
+	json, err := json.Marshal(data)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return json, nil
+}
+
+func ConvertToPromptString(p Prompt) string {
+	rulesFormated := convertStringArrayPromptToString(p.GetRules())
+	examplesFormated := convertStringArrayPromptToString(p.GetExamples())
+
+	return fmt.Sprintf("Introduction:\n%s\nRules:\n%s\nStrucute:%s\nExamples:\n%s", p.GetIntroduction(), rulesFormated, p.GetStructure(), examplesFormated)
+}
+
+func convertStringArrayPromptToString(arr []string) string {
+	return "- " + strings.Join(arr, "\n- ")
 }
