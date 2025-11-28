@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/eduardongomes/gcai/errs"
+	"github.com/eduardongomes/gcai/internal/prompt"
 	"github.com/eduardongomes/gcai/internal/providers"
 )
 
@@ -18,13 +19,17 @@ type Config struct {
 	configPath  string
 	allow_edit  bool
 	agent       providers.Provider
+	promptType  prompt.PromptType
+	prompt      prompt.Prompt
 }
 
 type envStruct struct {
-	GeminiKey string             `json:"geminiKey"`
-	OpenAIKey string             `json:"openAIAKey"`
-	AllowEdit bool               `json:"allowEdit"`
-	Agent     providers.Provider `json:"agent"`
+	GeminiKey  string             `json:"geminiKey"`
+	OpenAIKey  string             `json:"openAIAKey"`
+	AllowEdit  bool               `json:"allowEdit"`
+	Agent      providers.Provider `json:"agent"`
+	PromptType prompt.PromptType  `json:"promptType"`
+	Prompt     string             `json:"prompt"`
 }
 
 var e envStruct
@@ -33,12 +38,21 @@ type ConfigMethods interface {
 	LoadEnvs(configPath string) error
 	IsEmpty() bool
 	ConfigKey(io.Reader, providers.AgentOptions, io.Writer) error
+
 	GetGeminiKey() string
 	GetOpenAIKey() string
+
 	GetAllowEdit() bool
 	SetAllowEdit(v, rewrite bool) error
+
 	GetAgent() providers.Provider
 	SetAgent(providers.Provider, bool) error
+
+	GetPromptType() prompt.PromptType
+	setPromptType(prompt.PromptType)
+
+	GetPrompt() string
+	setPrompt(prompt.Prompt)
 }
 
 func NewConfig() *Config {
@@ -122,6 +136,22 @@ func (c *Config) SetAgent(v providers.Provider, rewrite bool) error {
 	}
 
 	return nil
+}
+
+func (c *Config) GetPrompt() string {
+	return prompt.ConvertToPromptString(c.prompt)
+}
+
+func (c *Config) setPrompt(p prompt.Prompt) {
+	c.prompt = p
+}
+
+func (c *Config) GetPromptType() prompt.PromptType {
+	return c.promptType
+}
+
+func (c *Config) setPromptType(v prompt.PromptType) {
+	c.promptType = v
 }
 
 func (c *Config) LoadEnvs(configPath string) error {

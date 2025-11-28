@@ -3,6 +3,7 @@ package config
 import (
 	"io"
 
+	"github.com/eduardongomes/gcai/internal/prompt"
 	"github.com/eduardongomes/gcai/internal/providers"
 )
 
@@ -14,6 +15,8 @@ type ConfigSpy struct {
 	allow_edit        bool
 	agent             providers.Provider
 	SetAllowEditCall  *bool
+	prompt            prompt.Prompt
+	promptType        prompt.PromptType
 }
 
 func (c *ConfigSpy) IsEmpty() bool {
@@ -64,11 +67,29 @@ func (c *ConfigSpy) SetAgent(v providers.Provider, r bool) error {
 	return nil
 }
 
+func (c *ConfigSpy) GetPrompt() string {
+	return prompt.ConvertToPromptString(c.prompt)
+}
+
+func (c *ConfigSpy) setPrompt(v prompt.Prompt) {
+	c.prompt = v
+}
+
+func (c *ConfigSpy) GetPromptType() prompt.PromptType {
+	return c.promptType
+}
+
+func (c *ConfigSpy) setPromptType(v prompt.PromptType) {
+	c.promptType = v
+}
+
 func NewConfSpy() *ConfigSpy {
 	return &ConfigSpy{
 		geminiKey:  "test_key",
 		openAIKey:  "test_key",
 		agent:      providers.GEMINI,
 		allow_edit: false,
+		promptType: prompt.DEFAULT,
+		prompt:     prompt.NewDefaultPrompt(),
 	}
 }
