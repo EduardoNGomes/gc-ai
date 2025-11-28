@@ -53,18 +53,16 @@ func (c *ConfigSpy) GetAllowEdit() bool {
 	return c.allow_edit
 }
 
-func (c *ConfigSpy) SetAllowEdit(val bool, _ bool) error {
+func (c *ConfigSpy) setAllowEdit(val bool) {
 	c.SetAllowEditCall = &val
-	return nil
 }
 
 func (c *ConfigSpy) GetAgent() providers.Provider {
 	return c.agent
 }
 
-func (c *ConfigSpy) SetAgent(v providers.Provider, r bool) error {
+func (c *ConfigSpy) setAgent(v providers.Provider) {
 	c.agent = v
-	return nil
 }
 
 func (c *ConfigSpy) GetPrompt() string {
@@ -81,6 +79,22 @@ func (c *ConfigSpy) GetPromptType() prompt.PromptType {
 
 func (c *ConfigSpy) setPromptType(v prompt.PromptType) {
 	c.promptType = v
+}
+
+func (c *ConfigSpy) RewriteConfig(v RewriteConfigOptions) error {
+	if v.Agent != nil {
+		c.setAgent(*v.Agent)
+	}
+	if v.AllowEdit != nil {
+		c.setAllowEdit(*v.AllowEdit)
+	}
+	if v.PromptType != nil {
+		c.setPromptType(*v.PromptType)
+	}
+	if v.Prompt != nil {
+		c.setPrompt(*v.Prompt)
+	}
+	return nil
 }
 
 func NewConfSpy() *ConfigSpy {
