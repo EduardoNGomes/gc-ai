@@ -1,5 +1,11 @@
 package prompt
 
+import (
+	"encoding/json"
+	"fmt"
+	"strings"
+)
+
 type DefaultPrompt struct {
 	introduction string
 	structure    string
@@ -42,6 +48,30 @@ func (p *DefaultPrompt) GetRules() []string {
 
 func (p *DefaultPrompt) GetExamples() []string {
 	return p.examples
+}
+
+func (p *DefaultPrompt) ConvertToJSON() (string, error) {
+	data := PromptJSON{
+		Introduction: p.GetIntroduction(),
+		Rules:        p.GetRules(),
+		Structure:    p.GetStructure(),
+		Examples:     p.GetExamples(),
+	}
+
+	json, err := json.Marshal(data)
+
+	if err != nil {
+		return "", err
+	}
+
+	return string(json), nil
+}
+
+func (p *DefaultPrompt) ConvertToPromptString() string {
+	rulesFormated := "- " + strings.Join(p.GetRules(), "\n- ")
+	examplesFormated := "- " + strings.Join(p.GetExamples(), "\n- ")
+
+	return fmt.Sprintf("Introduction:\n%s\nRules:\n%s\nStrucute:%s\nExamples:\n%s", p.GetIntroduction(), rulesFormated, p.GetStructure(), examplesFormated)
 }
 
 func NewDefaultPrompt() *DefaultPrompt {
