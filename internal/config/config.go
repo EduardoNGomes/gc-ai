@@ -190,8 +190,8 @@ func (c *Config) LoadEnvs(configPath string) error {
 	c.setConfigPath(configPath)
 	c.setOpenAIKey(e.OpenAIKey)
 	c.setGeminiKey(e.GeminiKey)
-	c.SetAllowEdit(e.AllowEdit, false)
-	c.SetAgent(e.Agent, false)
+	c.setAllowEdit(e.AllowEdit)
+	c.setAgent(e.Agent)
 	return nil
 }
 
