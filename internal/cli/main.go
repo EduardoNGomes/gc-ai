@@ -70,7 +70,20 @@ func (cli *CLI) Run(f f.Flags, c config.ConfigMethods, reader io.Reader) {
 	}
 
 	if f.AlterEditConfig != nil {
-		if err := c.SetAllowEdit(*f.AlterEditConfig, true); err != nil {
+
+		c.RewriteConfig(config.RewriteConfigOptions{
+			PromptType: nil,
+			Prompt:     nil,
+			AllowEdit:  nil,
+			Agent:      nil,
+		})
+
+		if err := c.RewriteConfig(config.RewriteConfigOptions{
+			PromptType: nil,
+			Prompt:     nil,
+			AllowEdit:  f.AlterEditConfig,
+			Agent:      nil,
+		}); err != nil {
 			log.Fatal(err)
 		}
 		fmt.Println("✅ Config changes applied successfully.")
@@ -80,14 +93,27 @@ func (cli *CLI) Run(f f.Flags, c config.ConfigMethods, reader io.Reader) {
 	if f.AlterAgent != nil {
 		switch *f.AlterAgent {
 		case "gemini":
+			agent := providers.GEMINI
 			{
-				if err := c.SetAgent(providers.GEMINI, true); err != nil {
+				if err :=
+					c.RewriteConfig(config.RewriteConfigOptions{
+						PromptType: nil,
+						Prompt:     nil,
+						AllowEdit:  nil,
+						Agent:      &agent,
+					}); err != nil {
 					log.Fatal(err)
 				}
 			}
 		case "openai":
+			agent := providers.OPEN_AI
 			{
-				if err := c.SetAgent(providers.OPEN_AI, true); err != nil {
+				if err := c.RewriteConfig(config.RewriteConfigOptions{
+					PromptType: nil,
+					Prompt:     nil,
+					AllowEdit:  nil,
+					Agent:      &agent,
+				}); err != nil {
 					log.Fatal(err)
 				}
 			}

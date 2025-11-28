@@ -76,6 +76,7 @@ func TestCLI(t *testing.T) {
 
 		reader := &bytes.Buffer{}
 		trueVal := true
+
 		flags := f.Flags{
 			AlterEditConfig: &trueVal,
 		}
