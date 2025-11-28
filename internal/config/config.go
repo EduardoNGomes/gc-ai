@@ -23,6 +23,13 @@ type Config struct {
 	prompt      prompt.Prompt
 }
 
+type RewriteConfigOptions struct {
+	PromptType *prompt.PromptType
+	Prompt     *prompt.Prompt
+	AllowEdit  *bool
+	Agent      *providers.Provider
+}
+
 type envStruct struct {
 	GeminiKey  string             `json:"geminiKey"`
 	OpenAIKey  string             `json:"openAIAKey"`
@@ -43,16 +50,18 @@ type ConfigMethods interface {
 	GetOpenAIKey() string
 
 	GetAllowEdit() bool
-	SetAllowEdit(v, rewrite bool) error
+	setAllowEdit(v bool)
 
 	GetAgent() providers.Provider
-	SetAgent(providers.Provider, bool) error
+	setAgent(providers.Provider)
 
 	GetPromptType() prompt.PromptType
 	setPromptType(prompt.PromptType)
 
 	GetPrompt() string
 	setPrompt(prompt.Prompt)
+
+	RewriteConfig(RewriteConfigOptions) error
 }
 
 func NewConfig() *Config {
@@ -74,24 +83,8 @@ func (c *Config) GetAllowEdit() bool {
 	return c.allow_edit
 }
 
-func (c *Config) SetAllowEdit(v, rewrite bool) error {
+func (c *Config) setAllowEdit(v bool) {
 	c.allow_edit = v
-
-	if rewrite {
-		fileConfig, err := os.OpenFile(c.configPath, os.O_RDWR, 0)
-
-		if err != nil {
-			return fmt.Errorf(errs.CannotOpenFileErr+" -> %w", err)
-		}
-
-		defer fileConfig.Close()
-
-		if err = writeConfig(fileConfig, c.GetGeminiKey(), c.GetOpenAIKey(), c.GetAllowEdit(), c.GetAgent()); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func (c *Config) GetOpenAIKey() string {
@@ -118,24 +111,8 @@ func (c *Config) GetAgent() providers.Provider {
 	return c.agent
 }
 
-func (c *Config) SetAgent(v providers.Provider, rewrite bool) error {
+func (c *Config) setAgent(v providers.Provider) {
 	c.agent = v
-
-	if rewrite {
-		fileConfig, err := os.OpenFile(c.configPath, os.O_RDWR, 0)
-
-		if err != nil {
-			return fmt.Errorf(errs.CannotOpenFileErr+" -> %w", err)
-		}
-
-		defer fileConfig.Close()
-
-		if err = writeConfig(fileConfig, c.GetGeminiKey(), c.GetOpenAIKey(), c.GetAllowEdit(), c.GetAgent()); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func (c *Config) GetPrompt() string {
@@ -152,6 +129,39 @@ func (c *Config) GetPromptType() prompt.PromptType {
 
 func (c *Config) setPromptType(v prompt.PromptType) {
 	c.promptType = v
+}
+
+func (c *Config) RewriteConfig(v RewriteConfigOptions) error {
+
+	if v.AllowEdit != nil {
+		c.setAllowEdit(*v.AllowEdit)
+	}
+
+	if v.Agent != nil {
+		c.setAgent(*v.Agent)
+	}
+
+	if v.PromptType != nil {
+		c.setPromptType(*v.PromptType)
+	}
+
+	if v.Prompt != nil {
+		c.setPrompt(*v.Prompt)
+	}
+
+	fileConfig, err := os.OpenFile(c.configPath, os.O_RDWR, 0)
+
+	if err != nil {
+		return fmt.Errorf(errs.CannotOpenFileErr+" -> %w", err)
+	}
+
+	defer fileConfig.Close()
+
+	if err = writeConfig(fileConfig, c.GetGeminiKey(), c.GetOpenAIKey(), c.GetAllowEdit(), c.GetAgent()); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *Config) LoadEnvs(configPath string) error {
@@ -212,14 +222,14 @@ func (c *Config) ConfigKey(reader io.Reader, agentOptions providers.AgentOptions
 			fmt.Fprint(outputWriter, "Write your OpenAI Key: ")
 			fmt.Fscanf(reader, "%s\n", &userInputOpenAi)
 			c.setOpenAIKey(userInputOpenAi)
-			c.SetAgent(providers.OPEN_AI, false)
+			c.setAgent(providers.OPEN_AI)
 		}
 	case providers.GEMINI:
 		{
 			fmt.Fprint(outputWriter, "Write your Gemini Key: ")
 			fmt.Fscanf(reader, "%s\n", &userInputGemini)
 			c.setGeminiKey(userInputGemini)
-			c.SetAgent(providers.GEMINI, false)
+			c.setAgent(providers.GEMINI)
 		}
 	default:
 		{
@@ -237,11 +247,11 @@ func (c *Config) ConfigKey(reader io.Reader, agentOptions providers.AgentOptions
 		switch strings.ToLower(userInputAllowEdit) {
 		case "y", "true":
 			{
-				c.SetAllowEdit(true, false)
+				c.setAllowEdit(true)
 			}
 		case "n", "false":
 			{
-				c.SetAllowEdit(false, false)
+				c.setAllowEdit(false)
 			}
 		default:
 			{
