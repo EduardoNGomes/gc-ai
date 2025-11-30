@@ -17,6 +17,8 @@ func (m *mockReader) Close() error {
 	return nil
 }
 
+func (m *mockReader) SetPrompt(string) {}
+
 func NewMockReader() *mockReader {
 	return &mockReader{}
 }
