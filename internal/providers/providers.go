@@ -20,8 +20,8 @@ func (s *SelectAgent) SelectedOption() Provider {
 	s.menu.AddItem(string(OPEN_AI), string(OPEN_AI))
 	s.menu.AddItem(string(GEMINI), string(GEMINI))
 
-	choice := s.menu.Display()
-	return Provider(choice)
+	choice, _ := s.menu.Display()
+	return Provider(choice.Result)
 }
 
 func NewSelectAgent(m Menu) *SelectAgent {
