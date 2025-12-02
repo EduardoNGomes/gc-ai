@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+
+	l "github.com/eduardongomes/gcai/internal/line-reader"
 )
 
 func TestPrompt(t *testing.T) {
@@ -12,9 +14,22 @@ func TestPrompt(t *testing.T) {
 	structure := "structure test"
 	rule := []string{"Rule 1"}
 	example := []string{"Example 1"}
+	reader := func() (l.LineReader, error) {
+		return l.NewMockReader(), nil
+	}
 
 	t.Run("[ConvertToJSON] Should convert to JSON", func(t *testing.T) {
-		p := NewCustomPrompt(introduction, structure, rule, example)
+		p, err := NewCustomPrompt(CustomPromptDTO{
+			Introduction: introduction,
+			Structure:    structure,
+			Rules:        rule,
+			Examples:     example,
+			NewReader:    reader,
+		})
+
+		if err != nil {
+			t.Errorf("Error on convert JSON Prompt\nErr -> %v", err)
+		}
 
 		result, err := ConvertToJSON(p)
 
@@ -56,7 +71,17 @@ func TestPrompt(t *testing.T) {
 	})
 
 	t.Run("[ConvertToPromptString] Should create only one prompt string", func(t *testing.T) {
-		p := NewCustomPrompt(introduction, structure, rule, example)
+		p, err := NewCustomPrompt(CustomPromptDTO{
+			Introduction: introduction,
+			Structure:    structure,
+			Rules:        rule,
+			Examples:     example,
+			NewReader:    reader,
+		})
+
+		if err != nil {
+			t.Error(err)
+		}
 
 		result := ConvertToPromptString(p)
 		fmt.Print(result)
