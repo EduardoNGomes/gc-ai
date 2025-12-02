@@ -95,16 +95,18 @@ func NewCustomPrompt(v CustomPromptDTO) (*CustomPrompt, error) {
 	}
 
 	return &CustomPrompt{
-		introduction,
-		structure,
-		examples,
-		rules,
+		introduction: introduction,
+		structure:    structure,
+		rules:        rules,
+		examples:     examples,
 	}, nil
 }
 
 func (c *CustomPromptDTO) editSTROption(rl linereader.LineReader, name, value string) (string, error) {
 
-	fmt.Println(fmt.Sprintf("Write your prompt %s or press ENTER to keep it unchanged:", name))
+	m := fmt.Sprintf("Write your prompt %s or press ENTER to keep it unchanged:", name)
+
+	fmt.Println(m)
 
 	oldValue := value
 
@@ -131,7 +133,9 @@ func (c *CustomPromptDTO) editArrOption(rl linereader.LineReader, arr []string, 
 		return arr, nil
 	}
 
-	fmt.Println("%s:", name)
+	m := fmt.Sprintf("%s:", name)
+
+	fmt.Println(m)
 	fmt.Print(convertStringArrayPromptToString(arr))
 
 	running := true
@@ -153,7 +157,8 @@ func (c *CustomPromptDTO) editArrOption(rl linereader.LineReader, arr []string, 
 		switch opt.Result {
 		case "ADD":
 			{
-				fmt.Println("Write your new %s:", name)
+				m := fmt.Sprintf("Write your new %s:", name)
+				fmt.Println(m)
 				rl.SetPrompt("> ")
 				userNewRule, err := rl.Readline()
 
