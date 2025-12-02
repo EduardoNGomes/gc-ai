@@ -10,7 +10,7 @@ func (m *mockReader) WriteStdin(b []byte) (int, error) {
 }
 
 func (m *mockReader) Readline() (string, error) {
-	return m.input + " (edited)", nil
+	return m.input, nil
 }
 
 func (m *mockReader) Close() error {
