@@ -94,7 +94,7 @@ func TestCustomPrompt(t *testing.T) {
 
 	t.Run("[EditOptions - ADD]", func(t *testing.T) {
 		initialArray := []string{"Regra 1"}
-		nomeDoCampo := "RULES"
+		fieldName := "RULES"
 
 		mockMenu := &mockMenu{
 			OptionsToReturn: []providers.MenuReturnOption{
@@ -102,22 +102,22 @@ func TestCustomPrompt(t *testing.T) {
 			},
 		}
 
-		readerExterno := &mockReader{
+		shouldEditResponse := &mockReader{
 			Inputs: []string{"y"},
 		}
 
-		readerInterno := &mockReader{
+		reader := &mockReader{
 			Inputs: []string{"My new rule", "n"},
 		}
 
 		dto := &CustomPromptDTO{
 			MenuAction: mockMenu,
 			NewReader: func() (linereader.LineReader, error) {
-				return readerInterno, nil
+				return reader, nil
 			},
 		}
 
-		resultArr, err := dto.editArrOption(readerExterno, initialArray, nomeDoCampo)
+		resultArr, err := dto.editArrOption(shouldEditResponse, initialArray, fieldName)
 
 		if err != nil {
 			t.Fatalf("Unexpected error: %v", err)
@@ -133,4 +133,83 @@ func TestCustomPrompt(t *testing.T) {
 		}
 	})
 
+	t.Run("[EditOptions - REMOVE]", func(t *testing.T) {
+		initialArray := []string{"Rule 1", "Rule 2"}
+		fieldName := "RULES"
+
+		mockMenu := &mockMenu{
+			OptionsToReturn: []providers.MenuReturnOption{
+				{Result: "REMOVE"},
+				{Result: "Rule 1", Position: 0},
+			},
+		}
+
+		shouldEditResponse := &mockReader{
+			Inputs: []string{"y"},
+		}
+
+		reader := &mockReader{
+			Inputs: []string{"1", "n"},
+		}
+
+		dto := &CustomPromptDTO{
+			MenuAction: mockMenu,
+			NewReader: func() (linereader.LineReader, error) {
+				return reader, nil
+			},
+		}
+
+		resultArr, err := dto.editArrOption(shouldEditResponse, initialArray, fieldName)
+
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
+
+		if len(resultArr) != 1 {
+			t.Errorf("Expected 1 item, receive %d", len(resultArr))
+		}
+	})
+
+	t.Run("[EditOptions - Edit]", func(t *testing.T) {
+		initialArray := []string{"Rule 1", "Rule 2"}
+		fieldName := "RULES"
+
+		newRule := "Rule 1 edited"
+		mockMenu := &mockMenu{
+			OptionsToReturn: []providers.MenuReturnOption{
+				{Result: "EDIT"},
+				{Result: "Rule 1", Position: 0},
+			},
+		}
+
+		shouldEditResponse := &mockReader{
+			Inputs: []string{"y"},
+		}
+
+		reader := &mockReader{
+			Inputs: []string{newRule, "n"},
+		}
+
+		dto := &CustomPromptDTO{
+			MenuAction: mockMenu,
+			NewReader: func() (linereader.LineReader, error) {
+				return reader, nil
+			},
+		}
+
+		resultArr, err := dto.editArrOption(shouldEditResponse, initialArray, fieldName)
+
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
+
+		if len(resultArr) != 2 {
+			t.Errorf("Expected 2 item, receive %d", len(resultArr))
+		}
+
+		if resultArr[0] != newRule {
+			t.Errorf("Expeted %s Receive %s", newRule, resultArr[0])
+		}
+
+	})
 }
