@@ -92,7 +92,7 @@ func TestCustomPrompt(t *testing.T) {
 		checkAssertArray(t, result, expected)
 	})
 
-	t.Run("[NewCustomPrompt]", func(t *testing.T) {
+	t.Run("[EditOptions - ADD]", func(t *testing.T) {
 		initialArray := []string{"Regra 1"}
 		nomeDoCampo := "RULES"
 
