@@ -13,7 +13,7 @@ type mockMenu struct {
 
 func (m *mockMenu) Display() (*providers.MenuReturnOption, error) {
 	if m.Cursor >= len(m.OptionsToReturn) {
-		return nil, fmt.Errorf("EOF: Finished menu options")
+		return nil, fmt.Errorf("EOF: Finished menu options cursor: %d, OPTIONS -> %v", m.Cursor, m.OptionsToReturn)
 	}
 
 	res := m.OptionsToReturn[m.Cursor]
