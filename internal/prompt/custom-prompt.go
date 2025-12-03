@@ -26,7 +26,6 @@ type CustomPromptDTO struct {
 	NewReader    func() (linereader.LineReader, error)
 	OutputWriter io.Writer
 	MenuAction   providers.Menu
-	MenuOptions  providers.Menu
 }
 
 func (p *CustomPrompt) GetIntroduction() string {
@@ -129,7 +128,7 @@ func (c *CustomPromptDTO) editArrOption(rl linereader.LineReader, arr []string, 
 		return arr, fmt.Errorf("error reading line: %v", err)
 	}
 
-	if strings.ToLower(shouldEdit) != "y" || strings.ToLower(shouldEdit) != "true" {
+	if strings.ToLower(shouldEdit) != "y" && strings.ToLower(shouldEdit) != "true" {
 		return arr, nil
 	}
 
