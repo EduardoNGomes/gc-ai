@@ -14,8 +14,11 @@ func TestPrompt(t *testing.T) {
 	structure := "structure test"
 	rule := []string{"Rule 1"}
 	example := []string{"Example 1"}
+
 	reader := func() (l.LineReader, error) {
-		return l.NewMockReader(), nil
+		return &mockReader{
+			Inputs: []string{introduction, structure, rule[0], example[0]},
+		}, nil
 	}
 
 	t.Run("[ConvertToJSON] Should convert to JSON", func(t *testing.T) {
