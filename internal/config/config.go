@@ -8,7 +8,9 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/chzyer/readline"
 	"github.com/eduardongomes/gcai/errs"
+	linereader "github.com/eduardongomes/gcai/internal/line-reader"
 	"github.com/eduardongomes/gcai/internal/prompt"
 	"github.com/eduardongomes/gcai/internal/providers"
 )
@@ -192,6 +194,41 @@ func (c *Config) LoadEnvs(configPath string) error {
 	c.setGeminiKey(e.GeminiKey)
 	c.setAllowEdit(e.AllowEdit)
 	c.setAgent(e.Agent)
+	c.setPromptType(prompt.DEFAULT)
+
+	switch c.GetPromptType() {
+
+	case prompt.DEFAULT:
+		{
+			c.setPrompt(prompt.NewDefaultPrompt())
+		}
+	case prompt.CUSTOM:
+		{
+			custom, err := prompt.NewCustomPrompt(prompt.CustomPromptDTO{
+				Introduction: "",
+				Structure:    "",
+				Rules:        []string{},
+				Examples:     []string{},
+				NewReader: func() (linereader.LineReader, error) {
+					return readline.New("")
+				},
+				OutputWriter: os.Stdout,
+				MenuAction:   prompt.NewMenuAction(),
+			})
+
+			if err != nil {
+				return fmt.Errorf("Error on set Custom Prompt: %w", err)
+			}
+
+			c.setPrompt(custom)
+		}
+	default:
+		{
+
+			c.setPrompt(prompt.NewDefaultPrompt())
+		}
+	}
+
 	return nil
 }
 
