@@ -33,12 +33,13 @@ type RewriteConfigOptions struct {
 }
 
 type envStruct struct {
-	GeminiKey  string             `json:"geminiKey"`
-	OpenAIKey  string             `json:"openAIAKey"`
-	AllowEdit  bool               `json:"allowEdit"`
-	Agent      providers.Provider `json:"agent"`
-	PromptType prompt.PromptType  `json:"promptType"`
-	Prompt     string             `json:"prompt"`
+	GeminiKey    string                  `json:"geminiKey"`
+	OpenAIKey    string                  `json:"openAIAKey"`
+	AllowEdit    bool                    `json:"allowEdit"`
+	Agent        providers.Provider      `json:"agent"`
+	PromptType   prompt.PromptType       `json:"promptType"`
+	Prompt       string                  `json:"prompt"`
+	CustomPrompt prompt.CustomPromptJSON `json:"customPrompt"`
 }
 
 var e envStruct
@@ -60,7 +61,8 @@ type ConfigMethods interface {
 	GetPromptType() prompt.PromptType
 	setPromptType(prompt.PromptType)
 
-	GetPrompt() string
+	GetPromptString() string
+	GetPrompt() prompt.Prompt
 	setPrompt(prompt.Prompt)
 
 	RewriteConfig(RewriteConfigOptions) error
@@ -117,8 +119,12 @@ func (c *Config) setAgent(v providers.Provider) {
 	c.agent = v
 }
 
-func (c *Config) GetPrompt() string {
+func (c *Config) GetPromptString() string {
 	return prompt.ConvertToPromptString(c.prompt)
+}
+
+func (c *Config) GetPrompt() prompt.Prompt {
+	return c.prompt
 }
 
 func (c *Config) setPrompt(p prompt.Prompt) {
@@ -159,7 +165,8 @@ func (c *Config) RewriteConfig(v RewriteConfigOptions) error {
 
 	defer fileConfig.Close()
 
-	if err = writeConfig(fileConfig, c.GetGeminiKey(), c.GetOpenAIKey(), c.GetAllowEdit(), c.GetAgent()); err != nil {
+	cfg := configDTO(fileConfig, c)
+	if err = writeConfig(cfg); err != nil {
 		return err
 	}
 
@@ -186,7 +193,8 @@ func (c *Config) LoadEnvs(configPath string) error {
 
 		defer fileConfig.Close()
 
-		writeConfig(fileConfig, "", "", false, providers.GEMINI)
+		cfg := configDTO(fileConfig, c)
+		writeConfig(cfg)
 	}
 
 	c.setConfigPath(configPath)
@@ -205,10 +213,10 @@ func (c *Config) LoadEnvs(configPath string) error {
 	case prompt.CUSTOM:
 		{
 			custom, err := prompt.NewCustomPrompt(prompt.CustomPromptDTO{
-				Introduction: "",
-				Structure:    "",
-				Rules:        []string{},
-				Examples:     []string{},
+				Introduction: e.CustomPrompt.Introduction,
+				Structure:    e.CustomPrompt.Structure,
+				Rules:        e.CustomPrompt.Rules,
+				Examples:     e.CustomPrompt.Examples,
 				NewReader: func() (linereader.LineReader, error) {
 					return readline.New("")
 				},
@@ -297,7 +305,9 @@ func (c *Config) ConfigKey(reader io.Reader, agentOptions providers.AgentOptions
 		}
 	}
 
-	if err = writeConfig(fileConfig, c.GetGeminiKey(), c.GetOpenAIKey(), c.GetAllowEdit(), c.GetAgent()); err != nil {
+	cfg := configDTO(fileConfig, c)
+
+	if err = writeConfig(cfg); err != nil {
 		return err
 	}
 
@@ -315,12 +325,41 @@ func convertJSON(data envStruct) ([]byte, error) {
 	return jsonByte, nil
 }
 
-func writeConfig(f *os.File, geminiV, openAIV string, allowEdit bool, agent providers.Provider) error {
+type writeConfigDTO struct {
+	file         *os.File
+	gemini       string
+	openai       string
+	allowEdit    bool
+	agent        providers.Provider
+	promptType   prompt.PromptType
+	customPrompt prompt.CustomPromptJSON
+}
+
+func configDTO(file *os.File, c *Config) *writeConfigDTO {
+	return &writeConfigDTO{
+		file:       file,
+		gemini:     c.GetGeminiKey(),
+		openai:     c.GetOpenAIKey(),
+		allowEdit:  c.GetAllowEdit(),
+		agent:      c.GetAgent(),
+		promptType: c.GetPromptType(),
+		customPrompt: prompt.CustomPromptJSON{
+			Introduction: c.GetPrompt().GetIntroduction(),
+			Structure:    c.GetPrompt().GetStructure(),
+			Examples:     c.GetPrompt().GetExamples(),
+			Rules:        c.GetPrompt().GetRules(),
+		},
+	}
+}
+
+func writeConfig(v *writeConfigDTO) error {
 	data := envStruct{
-		GeminiKey: geminiV,
-		OpenAIKey: openAIV,
-		AllowEdit: allowEdit,
-		Agent:     agent,
+		GeminiKey:    v.gemini,
+		OpenAIKey:    v.openai,
+		AllowEdit:    v.allowEdit,
+		Agent:        v.agent,
+		PromptType:   v.promptType,
+		CustomPrompt: v.customPrompt,
 	}
 
 	dataByte, err := convertJSON(data)
@@ -329,15 +368,15 @@ func writeConfig(f *os.File, geminiV, openAIV string, allowEdit bool, agent prov
 		return fmt.Errorf(errs.ErrorOnConvertDataToByte+" -> %v", err)
 	}
 
-	if _, err := f.Seek(0, 0); err != nil {
+	if _, err := v.file.Seek(0, 0); err != nil {
 		return fmt.Errorf("erro ao voltar o ponteiro: %v", err)
 	}
 
-	if err := f.Truncate(0); err != nil {
+	if err := v.file.Truncate(0); err != nil {
 		return fmt.Errorf("erro ao truncar arquivo: %v", err)
 	}
 
-	if _, err = f.Write([]byte(dataByte)); err != nil {
+	if _, err = v.file.Write([]byte(dataByte)); err != nil {
 		return fmt.Errorf(errs.ErrorOnWriteFileConfig+" -> %v", err)
 	}
 
