@@ -41,7 +41,7 @@ func (agent *GeminiAgent) GetCommit(config config.ConfigMethods) (string, error)
 		return "", err
 	}
 
-	prompt := fmt.Sprintf("%s\nDIFF:\n%s", config.GetPrompt(), diff)
+	prompt := fmt.Sprintf("%s\nDIFF:\n%s", config.GetPromptString(), diff)
 
 	result, err := client.Models.GenerateContent(
 		ctx,

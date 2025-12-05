@@ -36,7 +36,7 @@ func (agent *OpenAIAgent) GetCommit(config config.ConfigMethods) (string, error)
 		return "", fmt.Errorf("error on generate content %w", err)
 	}
 
-	prompt := fmt.Sprintf("%s\nDIFF:\n%s", config.GetPrompt(), diff)
+	prompt := fmt.Sprintf("%s\nDIFF:\n%s", config.GetPromptString(), diff)
 
 	resp, err := client.Responses.New(context.TODO(), responses.ResponseNewParams{
 		Model: "gpt-4.1-nano",
