@@ -18,6 +18,13 @@ type CustomPrompt struct {
 	examples     []string
 }
 
+type CustomPromptJSON struct {
+	Introduction string   `json:"introduction"`
+	Structure    string   `json:"structure"`
+	Examples     []string `json:"exemples"`
+	Rules        []string `json:"Rules"`
+}
+
 type CustomPromptDTO struct {
 	Introduction string
 	Structure    string
@@ -32,32 +39,16 @@ func (p *CustomPrompt) GetIntroduction() string {
 	return p.introduction
 }
 
-func (p *CustomPrompt) setIntroduction(v string) {
-	p.introduction = v
-}
-
 func (p *CustomPrompt) GetStructure() string {
 	return p.structure
-}
-
-func (p *CustomPrompt) setStructure(v string) {
-	p.structure = v
 }
 
 func (p *CustomPrompt) GetRules() []string {
 	return p.rules
 }
 
-func (p *CustomPrompt) setRules(v []string) {
-	p.rules = v
-}
-
 func (p *CustomPrompt) GetExamples() []string {
 	return p.examples
-}
-
-func (p *CustomPrompt) setExamples(v []string) {
-	p.rules = v
 }
 
 func NewCustomPrompt(v CustomPromptDTO) (*CustomPrompt, error) {
