@@ -2,11 +2,13 @@ package prompt
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"testing"
 
 	l "github.com/eduardongomes/gcai/internal/line-reader"
+	"github.com/eduardongomes/gcai/internal/providers"
 )
 
 func TestPrompt(t *testing.T) {
@@ -98,4 +100,48 @@ func TestPrompt(t *testing.T) {
 
 	})
 
+	t.Run("[NewMenuPromptOptions] should return DEFAULT optiont", func(t *testing.T) {
+		stub := &stubMenu{
+			DisplayFn: func() (*providers.MenuReturnOption, error) {
+				return &providers.MenuReturnOption{
+					Position: 0,
+					Result:   "DEFAULT",
+				}, nil
+			},
+		}
+		r, err := NewMenuPromptOptions(stub)
+
+		if err != nil {
+			t.Errorf("Error on select Default Option -> %v ", err)
+		}
+
+		if r != PromptType("DEFAULT") {
+			t.Fatalf("expected DEFAULT, got %s", r)
+		}
+	})
+
+	t.Run("[NewMenuPromptOptions] Should return ERROR", func(t *testing.T) {
+		mock := &stubMenu{
+			DisplayFn: func() (*providers.MenuReturnOption, error) {
+				return nil, errors.New("some error")
+			},
+		}
+
+		_, err := NewMenuPromptOptions(mock)
+
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+	})
+
+}
+
+type stubMenu struct {
+	DisplayFn func() (*providers.MenuReturnOption, error)
+}
+
+func (m *stubMenu) AddItem(label, value string) {}
+
+func (m *stubMenu) Display() (*providers.MenuReturnOption, error) {
+	return m.DisplayFn()
 }
