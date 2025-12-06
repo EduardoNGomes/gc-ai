@@ -256,12 +256,24 @@ func (c *Config) Config(reader io.Reader, agentOptions providers.AgentOptions, o
 
 	json.Unmarshal(f, &e)
 
-	var userInputAllowEdit string
-
 	if err := c.configAgent(reader, agentOptions, outputWriter); err != nil {
 		return err
 	}
 
+	c.configAllowEdit(reader, outputWriter)
+
+	cfg := configDTO(fileConfig, c)
+
+	if err = writeConfig(cfg); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Config) configAllowEdit(reader io.Reader, outputWriter io.Writer) {
+
+	var userInputAllowEdit string
 	options := []string{"y", "Y", "true", "n", "N", "false"}
 
 	for !slices.Contains(options, userInputAllowEdit) {
@@ -284,14 +296,6 @@ func (c *Config) Config(reader io.Reader, agentOptions providers.AgentOptions, o
 			}
 		}
 	}
-
-	cfg := configDTO(fileConfig, c)
-
-	if err = writeConfig(cfg); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (c *Config) configAgent(reader io.Reader, agentOptions providers.AgentOptions, outputWriter io.Writer) error {
