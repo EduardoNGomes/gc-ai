@@ -336,6 +336,12 @@ type writeConfigDTO struct {
 }
 
 func configDTO(file *os.File, c *Config) *writeConfigDTO {
+	p := c.GetPrompt()
+
+	if p == nil {
+		p = prompt.NewDefaultPrompt()
+	}
+
 	return &writeConfigDTO{
 		file:       file,
 		gemini:     c.GetGeminiKey(),
@@ -344,15 +350,16 @@ func configDTO(file *os.File, c *Config) *writeConfigDTO {
 		agent:      c.GetAgent(),
 		promptType: c.GetPromptType(),
 		customPrompt: prompt.CustomPromptJSON{
-			Introduction: c.GetPrompt().GetIntroduction(),
-			Structure:    c.GetPrompt().GetStructure(),
-			Examples:     c.GetPrompt().GetExamples(),
-			Rules:        c.GetPrompt().GetRules(),
+			Introduction: p.GetIntroduction(),
+			Structure:    p.GetStructure(),
+			Examples:     p.GetExamples(),
+			Rules:        p.GetRules(),
 		},
 	}
 }
 
 func writeConfig(v *writeConfigDTO) error {
+
 	data := envStruct{
 		GeminiKey:    v.gemini,
 		OpenAIKey:    v.openai,
