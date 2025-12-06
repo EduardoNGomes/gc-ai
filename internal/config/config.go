@@ -71,7 +71,7 @@ type ConfigMethods interface {
 
 func NewConfig() *Config {
 	return &Config{
-		menuPromptSelector:  &ProdMenuSelector{},
+		menuPromptSelector:  ProdMenuSelector{},
 		customPromptFactory: ProdCustomPromptFactory{},
 	}
 }
@@ -330,7 +330,7 @@ func (c *Config) ConfigPrompt() (prompt.Prompt, error) {
 				},
 				OutputWriter: os.Stdout,
 				MenuAction:   prompt.NewMenuAction(),
-				IsModify:     false,
+				IsModify:     true,
 			}
 
 			newPrompt, err := c.customPromptFactory.New(dto)
