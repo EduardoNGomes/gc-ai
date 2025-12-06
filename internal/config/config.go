@@ -38,7 +38,6 @@ type envStruct struct {
 	AllowEdit    bool                    `json:"allowEdit"`
 	Agent        providers.Provider      `json:"agent"`
 	PromptType   prompt.PromptType       `json:"promptType"`
-	Prompt       string                  `json:"prompt"`
 	CustomPrompt prompt.CustomPromptJSON `json:"customPrompt"`
 }
 
@@ -359,6 +358,11 @@ func configDTO(file *os.File, c *Config) *writeConfigDTO {
 }
 
 func writeConfig(v *writeConfigDTO) error {
+	var customPrompt prompt.CustomPromptJSON
+
+	if v.promptType == prompt.CUSTOM {
+		customPrompt = v.customPrompt
+	}
 
 	data := envStruct{
 		GeminiKey:    v.gemini,
@@ -366,7 +370,7 @@ func writeConfig(v *writeConfigDTO) error {
 		AllowEdit:    v.allowEdit,
 		Agent:        v.agent,
 		PromptType:   v.promptType,
-		CustomPrompt: v.customPrompt,
+		CustomPrompt: customPrompt,
 	}
 
 	dataByte, err := convertJSON(data)
