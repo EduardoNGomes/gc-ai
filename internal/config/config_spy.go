@@ -65,8 +65,12 @@ func (c *ConfigSpy) setAgent(v providers.Provider) {
 	c.agent = v
 }
 
-func (c *ConfigSpy) GetPrompt() string {
+func (c *ConfigSpy) GetPromptString() string {
 	return prompt.ConvertToPromptString(c.prompt)
+}
+
+func (c *ConfigSpy) GetPrompt() prompt.Prompt {
+	return c.prompt
 }
 
 func (c *ConfigSpy) setPrompt(v prompt.Prompt) {
