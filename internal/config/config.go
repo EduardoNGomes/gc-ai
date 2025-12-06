@@ -256,29 +256,10 @@ func (c *Config) Config(reader io.Reader, agentOptions providers.AgentOptions, o
 
 	json.Unmarshal(f, &e)
 
-	var userInputOpenAi, userInputGemini, userInputAllowEdit string
+	var userInputAllowEdit string
 
-	agentSelected := agentOptions.SelectedOption()
-
-	switch agentSelected {
-	case providers.OPEN_AI:
-		{
-			fmt.Fprint(outputWriter, "Write your OpenAI Key: ")
-			fmt.Fscanf(reader, "%s\n", &userInputOpenAi)
-			c.setOpenAIKey(userInputOpenAi)
-			c.setAgent(providers.OPEN_AI)
-		}
-	case providers.GEMINI:
-		{
-			fmt.Fprint(outputWriter, "Write your Gemini Key: ")
-			fmt.Fscanf(reader, "%s\n", &userInputGemini)
-			c.setGeminiKey(userInputGemini)
-			c.setAgent(providers.GEMINI)
-		}
-	default:
-		{
-			return errs.InvalidAgentSelected
-		}
+	if err := c.configAgent(reader, agentOptions, outputWriter); err != nil {
+		return err
 	}
 
 	options := []string{"y", "Y", "true", "n", "N", "false"}
@@ -310,6 +291,34 @@ func (c *Config) Config(reader io.Reader, agentOptions providers.AgentOptions, o
 		return err
 	}
 
+	return nil
+}
+
+func (c *Config) configAgent(reader io.Reader, agentOptions providers.AgentOptions, outputWriter io.Writer) error {
+
+	var userInputOpenAi, userInputGemini string
+	agentSelected := agentOptions.SelectedOption()
+
+	switch agentSelected {
+	case providers.OPEN_AI:
+		{
+			fmt.Fprint(outputWriter, "Write your OpenAI Key: ")
+			fmt.Fscanf(reader, "%s\n", &userInputOpenAi)
+			c.setOpenAIKey(userInputOpenAi)
+			c.setAgent(providers.OPEN_AI)
+		}
+	case providers.GEMINI:
+		{
+			fmt.Fprint(outputWriter, "Write your Gemini Key: ")
+			fmt.Fscanf(reader, "%s\n", &userInputGemini)
+			c.setGeminiKey(userInputGemini)
+			c.setAgent(providers.GEMINI)
+		}
+	default:
+		{
+			return errs.InvalidAgentSelected
+		}
+	}
 	return nil
 }
 
