@@ -28,6 +28,7 @@ func TestPrompt(t *testing.T) {
 			Rules:        rule,
 			Examples:     example,
 			NewReader:    reader,
+			IsModify:     false,
 		})
 
 		if err != nil {
@@ -80,6 +81,7 @@ func TestPrompt(t *testing.T) {
 			Rules:        rule,
 			Examples:     example,
 			NewReader:    reader,
+			IsModify:     false,
 		})
 
 		if err != nil {

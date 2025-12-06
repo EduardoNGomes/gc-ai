@@ -32,6 +32,7 @@ func TestCustomPrompt(t *testing.T) {
 			Introduction: customIndroduction,
 			NewReader:    reader,
 			MenuAction:   menu,
+			IsModify:     false,
 		})
 
 		if err != nil {
@@ -45,6 +46,7 @@ func TestCustomPrompt(t *testing.T) {
 	t.Run("[GetStructure] Should return custom structure", func(t *testing.T) {
 		sut, err := NewCustomPrompt(CustomPromptDTO{Structure: customStructure, NewReader: reader,
 			MenuAction: menu,
+			IsModify:   false,
 		})
 
 		if err != nil {
@@ -62,6 +64,7 @@ func TestCustomPrompt(t *testing.T) {
 			Rules:      customRules,
 			NewReader:  reader,
 			MenuAction: menu,
+			IsModify:   false,
 		})
 
 		if err != nil {
@@ -79,6 +82,7 @@ func TestCustomPrompt(t *testing.T) {
 			Examples:   customExamples,
 			NewReader:  reader,
 			MenuAction: menu,
+			IsModify:   false,
 		})
 
 		if err != nil {
@@ -115,6 +119,7 @@ func TestCustomPrompt(t *testing.T) {
 			NewReader: func() (linereader.LineReader, error) {
 				return reader, nil
 			},
+			IsModify: true,
 		}
 
 		resultArr, err := dto.editArrOption(shouldEditResponse, initialArray, fieldName)
@@ -157,6 +162,7 @@ func TestCustomPrompt(t *testing.T) {
 			NewReader: func() (linereader.LineReader, error) {
 				return reader, nil
 			},
+			IsModify: true,
 		}
 
 		resultArr, err := dto.editArrOption(shouldEditResponse, initialArray, fieldName)
@@ -195,6 +201,7 @@ func TestCustomPrompt(t *testing.T) {
 			NewReader: func() (linereader.LineReader, error) {
 				return reader, nil
 			},
+			IsModify: true,
 		}
 
 		resultArr, err := dto.editArrOption(shouldEditResponse, initialArray, fieldName)
