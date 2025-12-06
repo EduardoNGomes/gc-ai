@@ -221,6 +221,7 @@ func (c *Config) LoadEnvs(configPath string) error {
 				},
 				OutputWriter: os.Stdout,
 				MenuAction:   prompt.NewMenuAction(),
+				IsModify:     false,
 			})
 
 			if err != nil {
