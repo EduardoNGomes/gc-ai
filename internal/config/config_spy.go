@@ -28,7 +28,7 @@ func (c *ConfigSpy) LoadEnvs(path string) error {
 	return nil
 }
 
-func (c *ConfigSpy) ConfigKey(io.Reader, providers.AgentOptions, io.Writer) error {
+func (c *ConfigSpy) Config(io.Reader, providers.AgentOptions, io.Writer) error {
 	c.IsConfigKeyCalled = true
 	return nil
 }

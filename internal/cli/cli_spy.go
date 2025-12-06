@@ -22,7 +22,7 @@ func (cli *CLISpy) Run(f f.Flags, config c.ConfigMethods, reader io.Reader) {
 
 	agents := providers.NewSelectAgentSpy()
 	if config.IsEmpty() || f.OpenConfig {
-		config.ConfigKey(reader, agents, os.Stdout)
+		config.Config(reader, agents, os.Stdout)
 	}
 
 }

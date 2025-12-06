@@ -46,7 +46,7 @@ var e envStruct
 type ConfigMethods interface {
 	LoadEnvs(configPath string) error
 	IsEmpty() bool
-	ConfigKey(io.Reader, providers.AgentOptions, io.Writer) error
+	Config(io.Reader, providers.AgentOptions, io.Writer) error
 
 	GetGeminiKey() string
 	GetOpenAIKey() string
@@ -239,7 +239,7 @@ func (c *Config) LoadEnvs(configPath string) error {
 	return nil
 }
 
-func (c *Config) ConfigKey(reader io.Reader, agentOptions providers.AgentOptions, outputWriter io.Writer) error {
+func (c *Config) Config(reader io.Reader, agentOptions providers.AgentOptions, outputWriter io.Writer) error {
 	fileConfig, err := os.OpenFile(c.configPath, os.O_RDWR, 0)
 
 	if err != nil {

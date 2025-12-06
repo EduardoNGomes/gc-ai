@@ -123,7 +123,7 @@ func TestConfig(t *testing.T) {
 		agents := providers.NewSelectAgentSpy()
 		agents.SetAgent(providers.GEMINI)
 
-		c.ConfigKey(input, agents, &output)
+		c.Config(input, agents, &output)
 
 		checkAssert(t, c.GetGeminiKey(), gemini)
 
@@ -143,7 +143,7 @@ func TestConfig(t *testing.T) {
 
 		agents := providers.NewSelectAgentSpy()
 		agents.SetAgent(providers.OPEN_AI)
-		c.ConfigKey(input, agents, &output)
+		c.Config(input, agents, &output)
 
 		checkAssert(t, c.GetOpenAIKey(), openAI)
 	})
