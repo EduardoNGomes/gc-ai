@@ -33,6 +33,7 @@ type CustomPromptDTO struct {
 	NewReader    func() (linereader.LineReader, error)
 	OutputWriter io.Writer
 	MenuAction   providers.Menu
+	IsModify     bool
 }
 
 func (p *CustomPrompt) GetIntroduction() string {
@@ -52,6 +53,15 @@ func (p *CustomPrompt) GetExamples() []string {
 }
 
 func NewCustomPrompt(v CustomPromptDTO) (*CustomPrompt, error) {
+	if !v.IsModify {
+		return &CustomPrompt{
+			introduction: v.Introduction,
+			structure:    v.Structure,
+			rules:        v.Rules,
+			examples:     v.Examples,
+		}, nil
+	}
+
 	rl, err := v.NewReader()
 
 	if err != nil {
