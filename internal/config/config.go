@@ -70,7 +70,10 @@ type ConfigMethods interface {
 }
 
 func NewConfig() *Config {
-	return &Config{}
+	return &Config{
+		menuPromptSelector:  &ProdMenuSelector{},
+		customPromptFactory: ProdCustomPromptFactory{},
+	}
 }
 
 func (c *Config) IsEmpty() bool {

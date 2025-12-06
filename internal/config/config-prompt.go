@@ -19,3 +19,9 @@ func (ProdMenuSelector) SelectPromptType() (prompt.PromptType, error) {
 type CustomPromptFactory interface {
 	New(dto prompt.CustomPromptDTO) (prompt.Prompt, error)
 }
+
+type ProdCustomPromptFactory struct{}
+
+func (ProdCustomPromptFactory) New(dto prompt.CustomPromptDTO) (prompt.Prompt, error) {
+	return prompt.NewCustomPrompt(dto)
+}
