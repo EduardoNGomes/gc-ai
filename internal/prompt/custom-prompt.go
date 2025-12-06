@@ -238,14 +238,3 @@ func NewMenuAction() providers.Menu {
 
 	return menu
 }
-
-func NewMenuOptions(name string, arr []string) providers.Menu {
-
-	menu := providers.NewMenuCustomPrompt(name)
-
-	for _, v := range arr {
-		menu.AddItem(v, v)
-	}
-
-	return menu
-}
