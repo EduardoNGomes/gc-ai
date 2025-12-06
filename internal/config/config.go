@@ -265,6 +265,14 @@ func (c *Config) Config(reader io.Reader, agentOptions providers.AgentOptions, o
 
 	c.configAllowEdit(reader, outputWriter)
 
+	promptSelected, err := c.ConfigPrompt()
+
+	if err != nil {
+		return err
+	}
+
+	c.setPrompt(promptSelected)
+
 	cfg := configDTO(fileConfig, c)
 
 	if err = writeConfig(cfg); err != nil {
