@@ -16,13 +16,15 @@ import (
 )
 
 type Config struct {
-	open_ai_key string
-	gemini_key  string
-	configPath  string
-	allow_edit  bool
-	agent       providers.Provider
-	promptType  prompt.PromptType
-	prompt      prompt.Prompt
+	open_ai_key         string
+	gemini_key          string
+	configPath          string
+	allow_edit          bool
+	agent               providers.Provider
+	promptType          prompt.PromptType
+	prompt              prompt.Prompt
+	menuPromptSelector  MenuPromptSelector
+	customPromptFactory CustomPromptFactory
 }
 
 type RewriteConfigOptions struct {
@@ -270,6 +272,74 @@ func (c *Config) Config(reader io.Reader, agentOptions providers.AgentOptions, o
 	}
 
 	return nil
+}
+
+func (c *Config) ConfigPrompt() (prompt.Prompt, error) {
+	menu := c.menuPromptSelector
+	choice, err := menu.SelectPromptType()
+
+	if err != nil {
+		return nil, err
+	}
+
+	p := c.GetPrompt()
+
+	switch choice {
+	case prompt.CUSTOM:
+		{
+			c.setPromptType(prompt.CUSTOM)
+
+			dto := prompt.CustomPromptDTO{
+				Introduction: func() string {
+					if p == nil {
+						return ""
+					}
+					return p.GetIntroduction()
+				}(),
+				Structure: func() string {
+					if p == nil {
+						return ""
+					}
+					return p.GetStructure()
+				}(),
+				Rules: func() []string {
+					if p == nil {
+						return []string{}
+					}
+					return p.GetRules()
+				}(),
+				Examples: func() []string {
+					if p == nil {
+						return []string{}
+					}
+					return p.GetExamples()
+				}(),
+				NewReader: func() (linereader.LineReader, error) {
+					return readline.New("")
+				},
+				OutputWriter: os.Stdout,
+				MenuAction:   prompt.NewMenuAction(),
+				IsModify:     false,
+			}
+
+			newPrompt, err := c.customPromptFactory.New(dto)
+
+			if err != nil {
+				return nil, err
+			}
+
+			return newPrompt, nil
+		}
+
+	case prompt.DEFAULT:
+	default:
+		{
+
+			c.setPromptType(prompt.DEFAULT)
+		}
+	}
+
+	return prompt.NewDefaultPrompt(), nil
 }
 
 func (c *Config) configAllowEdit(reader io.Reader, outputWriter io.Writer) {
