@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+
+	"github.com/eduardongomes/gcai/internal/providers"
 )
 
 type PromptType string
@@ -18,6 +20,20 @@ type PromptJSON struct {
 	Rules        []string `json:"rules"`
 	Structure    string   `json:"structure"`
 	Examples     []string `json:"examples"`
+}
+
+func NewMenuPromptOptions(m providers.Menu) (PromptType, error) {
+
+	m.AddItem(string(DEFAULT), string(DEFAULT))
+	m.AddItem(string(CUSTOM), string(CUSTOM))
+
+	r, err := m.Display()
+
+	if err != nil {
+		return "", err
+	}
+
+	return PromptType(r.Result), nil
 }
 
 type Prompt interface {
