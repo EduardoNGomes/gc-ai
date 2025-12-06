@@ -52,7 +52,7 @@ func (p *CustomPrompt) GetExamples() []string {
 	return p.examples
 }
 
-func NewCustomPrompt(v CustomPromptDTO) (*CustomPrompt, error) {
+func NewCustomPrompt(v CustomPromptDTO) (Prompt, error) {
 	if !v.IsModify {
 		return &CustomPrompt{
 			introduction: v.Introduction,
@@ -233,8 +233,8 @@ func NewMenuAction() providers.Menu {
 	menu := providers.NewMenuCustomPrompt(title)
 
 	menu.AddItem("ADD", "ADD")
-	menu.AddItem("EDIT", "ADD")
-	menu.AddItem("REMOVE", "ADD")
+	menu.AddItem("EDIT", "EDIT")
+	menu.AddItem("REMOVE", "REMOVE")
 
 	return menu
 }
