@@ -34,7 +34,7 @@ func TestConfigPrompt(t *testing.T) {
 			t.Fatalf("expected %v, got %v", expectedPrompt, result)
 		}
 
-		if mockFactory.ReceivedDTO.IsModify != false {
+		if mockFactory.ReceivedDTO.IsModify != true {
 			t.Fatal("Invalid dto passed to factory")
 		}
 	})
