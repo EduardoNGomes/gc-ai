@@ -1,4 +1,4 @@
-package providers
+package menu
 
 import "github.com/manifoldco/promptui"
 
