@@ -1,20 +1,29 @@
 package providers
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/eduardongomes/gcai/internal/mocks"
+)
 
 func TestProviders(t *testing.T) {
 	t.Run("Should testMenu", func(t *testing.T) {
-		mock := &MockMenu{toReturn: string(GEMINI)}
-		agent := NewSelectAgent(mock)
 
-		result := agent.SelectedOption()
+		stub := mocks.NewStubMenuSelector()
+		stub.Choices = append(stub.Choices, 1)
+		agent := NewSelectAgent(stub)
+
+		result, err := agent.SelectedOption()
+
+		if err != nil {
+		}
 
 		if result != GEMINI {
 			t.Fatalf("expected %s, got %s", GEMINI, result)
 		}
 
-		if len(mock.items) != 2 {
-			t.Fatalf("expected 2 menu items, got %d", len(mock.items))
+		if len(stub.Items) != 2 {
+			t.Fatalf("expected 2 menu items, got %d", len(stub.Items))
 		}
 	})
 

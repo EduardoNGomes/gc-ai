@@ -1,9 +1,11 @@
 package providers
 
+import "github.com/eduardongomes/gcai/internal/menu"
+
 type Provider string
 
 type SelectAgent struct {
-	menu   Menu
+	menu   menu.MenuSelector
 	option Provider
 }
 
@@ -13,17 +15,24 @@ const (
 )
 
 type AgentOptions interface {
-	SelectedOption() Provider
+	SelectedOption() (Provider, error)
 }
 
-func (s *SelectAgent) SelectedOption() Provider {
-	s.menu.AddItem(string(OPEN_AI), string(OPEN_AI))
-	s.menu.AddItem(string(GEMINI), string(GEMINI))
+func (s *SelectAgent) SelectedOption() (Provider, error) {
+	items := []string{
+		string(OPEN_AI),
+		string(GEMINI),
+	}
 
-	choice, _ := s.menu.Display()
-	return Provider(choice.Result)
+	choice, err := s.menu.Run("Select your agent", items)
+
+	if err != nil {
+		return Provider(""), err
+	}
+
+	return Provider(choice.Result), nil
 }
 
-func NewSelectAgent(m Menu) *SelectAgent {
+func NewSelectAgent(m menu.MenuSelector) *SelectAgent {
 	return &SelectAgent{menu: m}
 }
