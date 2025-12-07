@@ -33,6 +33,6 @@ func (s *SelectAgent) SelectedOption() (Provider, error) {
 	return Provider(choice.Result), nil
 }
 
-func NewSelectAgent(m menu.MenuSelector) *SelectAgent {
-	return &SelectAgent{menu: m}
+func NewSelectAgent() *SelectAgent {
+	return &SelectAgent{menu: menu.NewProdMenuSelector()}
 }

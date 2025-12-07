@@ -1,15 +1,15 @@
 package providers
 
 type SelectAgentSpy struct {
-	option Provider
+	Option Provider
 }
 
 func (s *SelectAgentSpy) SetAgent(p Provider) {
-	s.option = p
+	s.Option = p
 }
 
 func (s *SelectAgentSpy) SelectedOption() (Provider, error) {
-	return s.option, nil
+	return s.Option, nil
 }
 
 func NewSelectAgentSpy() *SelectAgentSpy {
