@@ -6,12 +6,12 @@ import (
 	"github.com/eduardongomes/gcai/internal/mocks"
 )
 
-func TestMenuEdit(t *testing.T) {
+func TestMenuEditable(t *testing.T) {
 	defaultValue := "default value test"
 	newValue := "new value test"
 
-	t.Run("[MenuEdit] Should return right value", func(t *testing.T) {
-		menuEdit := mocks.NewStubMenuEdit()
+	t.Run("[MenuEditable] Should return right value", func(t *testing.T) {
+		menuEdit := mocks.NewStubMenuEditable()
 
 		menuEdit.Value = newValue
 		result, err := menuEdit.Run("test label", defaultValue)
@@ -26,8 +26,8 @@ func TestMenuEdit(t *testing.T) {
 
 	})
 
-	t.Run("[MenuEdit] Should return err", func(t *testing.T) {
-		menuEdit := mocks.NewStubMenuEdit()
+	t.Run("[MenuEditable] Should return err", func(t *testing.T) {
+		menuEdit := mocks.NewStubMenuEditable()
 
 		menuEdit.Value = defaultValue
 
