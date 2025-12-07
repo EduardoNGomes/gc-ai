@@ -3,11 +3,11 @@ package prompt
 import (
 	"fmt"
 	"io"
-	"log"
 	"slices"
 	"strings"
 
 	linereader "github.com/eduardongomes/gcai/internal/line-reader"
+	m "github.com/eduardongomes/gcai/internal/menu"
 	"github.com/eduardongomes/gcai/internal/providers"
 )
 
@@ -33,6 +33,9 @@ type CustomPromptDTO struct {
 	NewReader    func() (linereader.LineReader, error)
 	OutputWriter io.Writer
 	MenuAction   providers.Menu
+	MenuConfirm  m.MenuConfirm
+	MenuWriter   m.MenuWriter
+	MenuEditable m.MenuEditable
 	IsModify     bool
 }
 
@@ -82,13 +85,13 @@ func NewCustomPrompt(v CustomPromptDTO) (Prompt, error) {
 		return nil, err
 	}
 
-	rules, err := v.editArrOption(rl, v.Rules, "RULES")
+	rules, err := v.editArrOption(v.Rules, "RULES")
 
 	if err != nil {
 		return nil, err
 	}
 
-	examples, err := v.editArrOption(rl, v.Examples, "EXAMPLES")
+	examples, err := v.editArrOption(v.Examples, "EXAMPLES")
 
 	if err != nil {
 		return nil, err
@@ -120,16 +123,9 @@ func (c *CustomPromptDTO) editSTROption(rl linereader.LineReader, name, value st
 	return newValue, nil
 }
 
-func (c *CustomPromptDTO) editArrOption(rl linereader.LineReader, arr []string, name string) ([]string, error) {
-	fmt.Printf("Do you want change %s? (Y/N) ", name)
-
-	shouldEdit, err := rl.Readline()
-
-	if err != nil {
-		return arr, fmt.Errorf("error reading line: %v", err)
-	}
-
-	if strings.ToLower(shouldEdit) != "y" && strings.ToLower(shouldEdit) != "true" {
+func (c *CustomPromptDTO) editArrOption(arr []string, name string) ([]string, error) {
+	msg := fmt.Sprintf("Do you want change %s", name)
+	if err := c.MenuConfirm.Run(msg); err != nil {
 		return arr, nil
 	}
 
@@ -140,14 +136,6 @@ func (c *CustomPromptDTO) editArrOption(rl linereader.LineReader, arr []string, 
 
 	running := true
 
-	rl, err = c.NewReader()
-
-	if err != nil {
-		return arr, err
-
-	}
-	defer rl.Close()
-
 	for running {
 		opt, err := c.MenuAction.Display()
 		if err != nil {
@@ -157,18 +145,20 @@ func (c *CustomPromptDTO) editArrOption(rl linereader.LineReader, arr []string, 
 		switch opt.Result {
 		case "ADD":
 			{
-				m := fmt.Sprintf("Write your new %s:", name)
-				fmt.Println(m)
-				rl.SetPrompt("> ")
-				userNewRule, err := rl.Readline()
+				msg := fmt.Sprintf("Write your new %s:", name)
+
+				newRule, err := c.MenuWriter.Run(msg)
 
 				if err != nil {
 					return arr, err
 				}
 
-				arr = append(arr, userNewRule)
-				fmt.Printf("%s:", name)
-				fmt.Print(convertStringArrayPromptToString(arr))
+				if strings.TrimSpace(newRule) != "" {
+					arr = append(arr, newRule)
+				}
+
+				fmt.Printf("%s:\n", name)
+				fmt.Println(convertStringArrayPromptToString(arr))
 				break
 			}
 
