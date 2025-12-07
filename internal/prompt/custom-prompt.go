@@ -8,7 +8,6 @@ import (
 
 	linereader "github.com/eduardongomes/gcai/internal/line-reader"
 	m "github.com/eduardongomes/gcai/internal/menu"
-	"github.com/eduardongomes/gcai/internal/providers"
 )
 
 type CustomPrompt struct {
@@ -32,7 +31,7 @@ type CustomPromptDTO struct {
 	Examples     []string
 	NewReader    func() (linereader.LineReader, error)
 	OutputWriter io.Writer
-	MenuAction   providers.Menu
+	MenuSelector m.MenuSelector
 	MenuConfirm  m.MenuConfirm
 	MenuWriter   m.MenuWriter
 	MenuEditable m.MenuEditable
@@ -136,8 +135,10 @@ func (c *CustomPromptDTO) editArrOption(arr []string, name string) ([]string, er
 
 	running := true
 
+	actionOptions := []string{"ADD", "EDIT", "REMOVE"}
+
 	for running {
-		opt, err := c.MenuAction.Display()
+		opt, err := c.MenuSelector.Run("Choose an action:", actionOptions)
 		if err != nil {
 			return arr, err
 		}
@@ -164,36 +165,34 @@ func (c *CustomPromptDTO) editArrOption(arr []string, name string) ([]string, er
 
 		case "EDIT":
 			{
-				opt, err := c.MenuAction.Display()
+				opt, err := c.MenuSelector.Run("Chose one to edit:", arr)
 				if err != nil {
-					log.Fatal(err)
+					return arr, err
 				}
 
-				rl.SetPrompt("Edit: ")
-				rl.WriteStdin([]byte(opt.Result))
-				userInput, err := rl.Readline()
+				line, err := c.MenuEditable.Run("Edit:", opt.Result)
 
 				if err != nil {
 					return arr, err
 				}
 
-				arr[opt.Position] = userInput
+				arr[opt.Position] = line
 
-				fmt.Printf("%s:", name)
-				fmt.Print(convertStringArrayPromptToString(arr))
+				fmt.Printf("%s:\n", name)
+				fmt.Println(convertStringArrayPromptToString(arr))
 				break
 			}
 
 		case "REMOVE":
 			{
-				opt, err := c.MenuAction.Display()
+				opt, err := c.MenuSelector.Run("Chose one to edit:", arr)
 				if err != nil {
 					return arr, err
 				}
 
 				arr = slices.Delete(arr, opt.Position, opt.Position+1)
-				fmt.Printf("%s:", name)
-				fmt.Print(convertStringArrayPromptToString(arr))
+				fmt.Printf("%s:\n", name)
+				fmt.Println(convertStringArrayPromptToString(arr))
 				break
 			}
 		default:
@@ -203,28 +202,9 @@ func (c *CustomPromptDTO) editArrOption(arr []string, name string) ([]string, er
 
 		}
 
-		fmt.Print("Should continue? (y/n) ")
-		userContinueChoice, err := rl.Readline()
-
-		if err != nil {
-			return arr, err
-		}
-
-		if strings.ToLower(userContinueChoice) != "y" && strings.ToLower(userContinueChoice) != "true" && strings.ToLower(userContinueChoice) != "yes" {
+		if err := c.MenuConfirm.Run("Should continue? (y/n)"); err != nil {
 			running = false
 		}
 	}
 	return arr, nil
-}
-
-func NewMenuAction() providers.Menu {
-
-	title := "Select an option"
-	menu := providers.NewMenuCustomPrompt(title)
-
-	menu.AddItem("ADD", "ADD")
-	menu.AddItem("EDIT", "EDIT")
-	menu.AddItem("REMOVE", "REMOVE")
-
-	return menu
 }
