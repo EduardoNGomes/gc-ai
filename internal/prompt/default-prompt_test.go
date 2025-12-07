@@ -1,29 +1,31 @@
-package prompt
+package prompt_test
 
 import (
 	"reflect"
 	"testing"
+
+	p "github.com/eduardongomes/gcai/internal/prompt"
 )
 
 func TestDefaultPrompt(t *testing.T) {
 	t.Run("[GetIntroduction] Should return default introduction", func(t *testing.T) {
-		result := NewDefaultPrompt().GetIntroduction()
-		expected := INTRODUCTION
+		result := p.NewDefaultPrompt().GetIntroduction()
+		expected := p.INTRODUCTION
 		checkAssertString(t, result, expected)
 	})
 	t.Run("[GetStructure] Should return default structure", func(t *testing.T) {
-		result := NewDefaultPrompt().GetStructure()
-		expected := STRUCTURE
+		result := p.NewDefaultPrompt().GetStructure()
+		expected := p.STRUCTURE
 		checkAssertString(t, result, expected)
 	})
 	t.Run("[GetRules] Should return default rules", func(t *testing.T) {
-		result := NewDefaultPrompt().GetRules()
-		expected := RULES
+		result := p.NewDefaultPrompt().GetRules()
+		expected := p.RULES
 		checkAssertArray(t, result, expected)
 	})
 	t.Run("[GetExamples] Should return default examples", func(t *testing.T) {
-		result := NewDefaultPrompt().GetExamples()
-		expected := EXAMPLES
+		result := p.NewDefaultPrompt().GetExamples()
+		expected := p.EXAMPLES
 		checkAssertArray(t, result, expected)
 	})
 }

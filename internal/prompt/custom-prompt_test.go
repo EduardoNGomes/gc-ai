@@ -1,11 +1,12 @@
-package prompt
+package prompt_test
 
 import (
 	"testing"
 
-	l "github.com/eduardongomes/gcai/internal/line-reader"
-	linereader "github.com/eduardongomes/gcai/internal/line-reader"
-	"github.com/eduardongomes/gcai/internal/providers"
+	"github.com/eduardongomes/gcai/internal/menu"
+	"github.com/eduardongomes/gcai/internal/mocks"
+
+	p "github.com/eduardongomes/gcai/internal/prompt"
 )
 
 func TestCustomPrompt(t *testing.T) {
@@ -15,23 +16,15 @@ func TestCustomPrompt(t *testing.T) {
 	customExamples := []string{"Custom Examples"}
 	customRules := []string{"Custom Rules"}
 
-	reader := func() (l.LineReader, error) {
-		return &mockReader{
-			Inputs: []string{customIndroduction, customStructure, "n", "n"},
-		}, nil
-	}
+	stubMenuActionCommon := mocks.NewStubMenuSelector()
+	stubMenuActionCommon.Choices = append(stubMenuActionCommon.Choices, 0)
+	stubMenuActionCommon.Items = append(stubMenuActionCommon.Items, menu.MenuSelectorReturnOption{Position: 0, Result: "test"})
 
-	menu := &mockMenu{
-		OptionsToReturn: []providers.MenuReturnOption{
-			{Result: ""},
-		},
-	}
 	t.Run("[GetIntroduction] Should return custom introduction", func(t *testing.T) {
 
-		r, err := NewCustomPrompt(CustomPromptDTO{
+		r, err := p.NewCustomPrompt(p.CustomPromptDTO{
 			Introduction: customIndroduction,
-			NewReader:    reader,
-			MenuAction:   menu,
+			MenuSelector: stubMenuActionCommon,
 			IsModify:     false,
 		})
 
@@ -44,9 +37,10 @@ func TestCustomPrompt(t *testing.T) {
 		checkAssertString(t, result, expected)
 	})
 	t.Run("[GetStructure] Should return custom structure", func(t *testing.T) {
-		sut, err := NewCustomPrompt(CustomPromptDTO{Structure: customStructure, NewReader: reader,
-			MenuAction: menu,
-			IsModify:   false,
+		sut, err := p.NewCustomPrompt(p.CustomPromptDTO{
+			Structure:    customStructure,
+			MenuSelector: stubMenuActionCommon,
+			IsModify:     false,
 		})
 
 		if err != nil {
@@ -60,11 +54,10 @@ func TestCustomPrompt(t *testing.T) {
 
 	t.Run("[GetRules] Should return custom rules", func(t *testing.T) {
 
-		r, err := NewCustomPrompt(CustomPromptDTO{
-			Rules:      customRules,
-			NewReader:  reader,
-			MenuAction: menu,
-			IsModify:   false,
+		r, err := p.NewCustomPrompt(p.CustomPromptDTO{
+			Rules:        customRules,
+			MenuSelector: stubMenuActionCommon,
+			IsModify:     false,
 		})
 
 		if err != nil {
@@ -78,11 +71,10 @@ func TestCustomPrompt(t *testing.T) {
 	})
 	t.Run("[GetExamples] Should return custom examples", func(t *testing.T) {
 
-		r, err := NewCustomPrompt(CustomPromptDTO{
-			Examples:   customExamples,
-			NewReader:  reader,
-			MenuAction: menu,
-			IsModify:   false,
+		r, err := p.NewCustomPrompt(p.CustomPromptDTO{
+			Examples:     customExamples,
+			MenuSelector: stubMenuActionCommon,
+			IsModify:     false,
 		})
 
 		if err != nil {
@@ -96,83 +88,61 @@ func TestCustomPrompt(t *testing.T) {
 		checkAssertArray(t, result, expected)
 	})
 
-	t.Run("[EditOptions - ADD]", func(t *testing.T) {
-		initialArray := []string{"Regra 1"}
-		fieldName := "RULES"
+	t.Run("[EditSTROption]", func(t *testing.T) {
 
-		mockMenu := &mockMenu{
-			OptionsToReturn: []providers.MenuReturnOption{
-				{Result: "ADD"},
-			},
+		newRule := "Rule 1 edited"
+		stubEditable := mocks.NewStubMenuEditable()
+		stubEditable.Value = newRule
+
+		dto := &p.CustomPromptDTO{
+			MenuEditable: stubEditable,
+			IsModify:     true,
 		}
 
-		shouldEditResponse := &mockReader{
-			Inputs: []string{"y"},
-		}
-
-		reader := &mockReader{
-			Inputs: []string{"My new rule", "n"},
-		}
-
-		dto := &CustomPromptDTO{
-			MenuAction: mockMenu,
-			NewReader: func() (linereader.LineReader, error) {
-				return reader, nil
-			},
-			IsModify: true,
-		}
-
-		resultArr, err := dto.editArrOption(shouldEditResponse, initialArray, fieldName)
-
+		result, err := dto.EditSTROption("test", "test")
 		if err != nil {
-			t.Fatalf("Unexpected error: %v", err)
+			t.Errorf("Unexpected error: %v", err)
 		}
 
-		if len(resultArr) != 2 {
-			t.Fatalf("Expected 2 itens, receive %d", len(resultArr))
-		}
-
-		expectedNewItem := "My new rule"
-		if resultArr[1] != expectedNewItem {
-			t.Errorf("Expected '%s', receive '%s'", expectedNewItem, resultArr[1])
+		if result != newRule {
+			t.Errorf("Expected %s, receive %s", newRule, result)
 		}
 	})
 
-	t.Run("[EditOptions - REMOVE]", func(t *testing.T) {
-		initialArray := []string{"Rule 1", "Rule 2"}
-		fieldName := "RULES"
+	t.Run("[EditOptions - ADD]", func(t *testing.T) {
 
-		mockMenu := &mockMenu{
-			OptionsToReturn: []providers.MenuReturnOption{
-				{Result: "REMOVE"},
-				{Result: "Rule 1", Position: 0},
-			},
+		stubSelector := mocks.NewStubMenuSelector()
+		stubSelector.Choices = append(stubSelector.Choices, 0)
+
+		stubConfirm := mocks.NewStubMenuConfirm()
+		stubConfirm.Values = append(stubConfirm.Values, true)
+		stubConfirm.Values = append(stubConfirm.Values, false)
+
+		newValue := "Test 3"
+		stubWriter := mocks.NewStubMenuWriter()
+		stubWriter.Value = newValue
+
+		dto := &p.CustomPromptDTO{
+			MenuSelector: stubSelector,
+			MenuConfirm:  stubConfirm,
+			MenuWriter:   stubWriter,
+			IsModify:     true,
 		}
 
-		shouldEditResponse := &mockReader{
-			Inputs: []string{"y"},
-		}
+		initialArray := []string{"Test 1", "Test 2"}
 
-		reader := &mockReader{
-			Inputs: []string{"1", "n"},
-		}
-
-		dto := &CustomPromptDTO{
-			MenuAction: mockMenu,
-			NewReader: func() (linereader.LineReader, error) {
-				return reader, nil
-			},
-			IsModify: true,
-		}
-
-		resultArr, err := dto.editArrOption(shouldEditResponse, initialArray, fieldName)
+		resultArr, err := dto.EditArrOption(initialArray, "Test ADD")
 
 		if err != nil {
-			t.Fatalf("Unexpected error: %v", err)
+			t.Errorf("Unexpected error: %v", err)
 		}
 
-		if len(resultArr) != 1 {
-			t.Errorf("Expected 1 item, receive %d", len(resultArr))
+		if len(resultArr) != 3 {
+			t.Errorf("Expected 3 itens, receive %d", len(resultArr))
+		}
+
+		if resultArr[2] != newValue {
+			t.Errorf("Expected %s , receive %s", newValue, resultArr[2])
 		}
 	})
 
@@ -180,31 +150,26 @@ func TestCustomPrompt(t *testing.T) {
 		initialArray := []string{"Rule 1", "Rule 2"}
 		fieldName := "RULES"
 
+		stubSelector := mocks.NewStubMenuSelector()
+		stubSelector.Choices = append(stubSelector.Choices, 1)
+		stubSelector.Choices = append(stubSelector.Choices, 0)
+
+		stubConfirm := mocks.NewStubMenuConfirm()
+		stubConfirm.Values = append(stubConfirm.Values, true)
+		stubConfirm.Values = append(stubConfirm.Values, false)
+
 		newRule := "Rule 1 edited"
-		mockMenu := &mockMenu{
-			OptionsToReturn: []providers.MenuReturnOption{
-				{Result: "EDIT"},
-				{Result: "Rule 1", Position: 0},
-			},
+		stubEditable := mocks.NewStubMenuEditable()
+		stubEditable.Value = newRule
+
+		dto := &p.CustomPromptDTO{
+			MenuSelector: stubSelector,
+			MenuConfirm:  stubConfirm,
+			MenuEditable: stubEditable,
+			IsModify:     true,
 		}
 
-		shouldEditResponse := &mockReader{
-			Inputs: []string{"y"},
-		}
-
-		reader := &mockReader{
-			Inputs: []string{newRule, "n"},
-		}
-
-		dto := &CustomPromptDTO{
-			MenuAction: mockMenu,
-			NewReader: func() (linereader.LineReader, error) {
-				return reader, nil
-			},
-			IsModify: true,
-		}
-
-		resultArr, err := dto.editArrOption(shouldEditResponse, initialArray, fieldName)
+		resultArr, err := dto.EditArrOption(initialArray, fieldName)
 
 		if err != nil {
 			t.Fatalf("Unexpected error: %v", err)
@@ -218,5 +183,34 @@ func TestCustomPrompt(t *testing.T) {
 			t.Errorf("Expeted %s Receive %s", newRule, resultArr[0])
 		}
 
+	})
+
+	t.Run("[EditOptions - REMOVE]", func(t *testing.T) {
+		initialArray := []string{"Test 1", "Test 2"}
+		fieldName := "Test"
+
+		stubSelector := mocks.NewStubMenuSelector()
+		stubSelector.Choices = append(stubSelector.Choices, 2)
+		stubSelector.Choices = append(stubSelector.Choices, 1)
+
+		stubConfirm := mocks.NewStubMenuConfirm()
+		stubConfirm.Values = append(stubConfirm.Values, true)
+		stubConfirm.Values = append(stubConfirm.Values, false)
+
+		dto := &p.CustomPromptDTO{
+			MenuSelector: stubSelector,
+			MenuConfirm:  stubConfirm,
+			IsModify:     true,
+		}
+
+		resultArr, err := dto.EditArrOption(initialArray, fieldName)
+
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
+
+		if len(resultArr) != 1 {
+			t.Errorf("Expected 1 item, receive %d", len(resultArr))
+		}
 	})
 }

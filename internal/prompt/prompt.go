@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/eduardongomes/gcai/internal/providers"
+	"github.com/eduardongomes/gcai/internal/menu"
 )
 
 type PromptType string
@@ -22,12 +22,14 @@ type PromptJSON struct {
 	Examples     []string `json:"examples"`
 }
 
-func NewMenuPromptOptions(m providers.Menu) (PromptType, error) {
+func NewMenuPromptOptions(m menu.MenuSelector) (PromptType, error) {
 
-	m.AddItem(string(DEFAULT), string(DEFAULT))
-	m.AddItem(string(CUSTOM), string(CUSTOM))
+	items := []string{
+		string(DEFAULT),
+		string(CUSTOM),
+	}
 
-	r, err := m.Display()
+	r, err := m.Run("Choice your prompt type", items)
 
 	if err != nil {
 		return "", err
@@ -61,12 +63,12 @@ func ConvertToJSON(p Prompt) ([]byte, error) {
 }
 
 func ConvertToPromptString(p Prompt) string {
-	rulesFormated := convertStringArrayPromptToString(p.GetRules())
-	examplesFormated := convertStringArrayPromptToString(p.GetExamples())
+	rulesFormated := ConvertStringArrayPromptToString(p.GetRules())
+	examplesFormated := ConvertStringArrayPromptToString(p.GetExamples())
 
 	return fmt.Sprintf("Introduction:\n%s\nRules:\n%s\nStrucute:%s\nExamples:\n%s", p.GetIntroduction(), rulesFormated, p.GetStructure(), examplesFormated)
 }
 
-func convertStringArrayPromptToString(arr []string) string {
+func ConvertStringArrayPromptToString(arr []string) string {
 	return "- " + strings.Join(arr, "\n- ")
 }

@@ -60,25 +60,25 @@ func NewCustomPrompt(v CustomPromptDTO) (Prompt, error) {
 		}, nil
 	}
 
-	introduction, err := v.editSTROption("Introduction", v.Introduction)
+	introduction, err := v.EditSTROption("Introduction", v.Introduction)
 
 	if err != nil {
 		return nil, err
 	}
 
-	structure, err := v.editSTROption("Structure", v.Structure)
+	structure, err := v.EditSTROption("Structure", v.Structure)
 
 	if err != nil {
 		return nil, err
 	}
 
-	rules, err := v.editArrOption(v.Rules, "RULES")
+	rules, err := v.EditArrOption(v.Rules, "RULES")
 
 	if err != nil {
 		return nil, err
 	}
 
-	examples, err := v.editArrOption(v.Examples, "EXAMPLES")
+	examples, err := v.EditArrOption(v.Examples, "EXAMPLES")
 
 	if err != nil {
 		return nil, err
@@ -92,7 +92,7 @@ func NewCustomPrompt(v CustomPromptDTO) (Prompt, error) {
 	}, nil
 }
 
-func (c *CustomPromptDTO) editSTROption(name, value string) (string, error) {
+func (c *CustomPromptDTO) EditSTROption(name, value string) (string, error) {
 
 	msg := fmt.Sprintf("Write your prompt %s or press ENTER to keep it unchanged:", name)
 
@@ -105,7 +105,7 @@ func (c *CustomPromptDTO) editSTROption(name, value string) (string, error) {
 	return line, nil
 }
 
-func (c *CustomPromptDTO) editArrOption(arr []string, name string) ([]string, error) {
+func (c *CustomPromptDTO) EditArrOption(arr []string, name string) ([]string, error) {
 	msg := fmt.Sprintf("Do you want change %s", name)
 	if err := c.MenuConfirm.Run(msg); err != nil {
 		return arr, nil
@@ -114,7 +114,7 @@ func (c *CustomPromptDTO) editArrOption(arr []string, name string) ([]string, er
 	m := fmt.Sprintf("%s:", name)
 
 	fmt.Println(m)
-	fmt.Print(convertStringArrayPromptToString(arr))
+	fmt.Print(ConvertStringArrayPromptToString(arr))
 
 	running := true
 
@@ -142,7 +142,7 @@ func (c *CustomPromptDTO) editArrOption(arr []string, name string) ([]string, er
 				}
 
 				fmt.Printf("%s:\n", name)
-				fmt.Println(convertStringArrayPromptToString(arr))
+				fmt.Println(ConvertStringArrayPromptToString(arr))
 				break
 			}
 
@@ -162,7 +162,7 @@ func (c *CustomPromptDTO) editArrOption(arr []string, name string) ([]string, er
 				arr[opt.Position] = line
 
 				fmt.Printf("%s:\n", name)
-				fmt.Println(convertStringArrayPromptToString(arr))
+				fmt.Println(ConvertStringArrayPromptToString(arr))
 				break
 			}
 
@@ -175,7 +175,7 @@ func (c *CustomPromptDTO) editArrOption(arr []string, name string) ([]string, er
 
 				arr = slices.Delete(arr, opt.Position, opt.Position+1)
 				fmt.Printf("%s:\n", name)
-				fmt.Println(convertStringArrayPromptToString(arr))
+				fmt.Println(ConvertStringArrayPromptToString(arr))
 				break
 			}
 		default:

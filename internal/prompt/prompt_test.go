@@ -1,14 +1,14 @@
-package prompt
+package prompt_test
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"reflect"
 	"testing"
 
-	l "github.com/eduardongomes/gcai/internal/line-reader"
-	"github.com/eduardongomes/gcai/internal/providers"
+	"github.com/eduardongomes/gcai/internal/mocks"
+
+	p "github.com/eduardongomes/gcai/internal/prompt"
 )
 
 func TestPrompt(t *testing.T) {
@@ -16,20 +16,12 @@ func TestPrompt(t *testing.T) {
 	structure := "structure test"
 	rule := []string{"Rule 1"}
 	example := []string{"Example 1"}
-
-	reader := func() (l.LineReader, error) {
-		return &mockReader{
-			Inputs: []string{introduction, structure, rule[0], example[0]},
-		}, nil
-	}
-
 	t.Run("[ConvertToJSON] Should convert to JSON", func(t *testing.T) {
-		p, err := NewCustomPrompt(CustomPromptDTO{
+		prompt, err := p.NewCustomPrompt(p.CustomPromptDTO{
 			Introduction: introduction,
 			Structure:    structure,
 			Rules:        rule,
 			Examples:     example,
-			NewReader:    reader,
 			IsModify:     false,
 		})
 
@@ -37,13 +29,13 @@ func TestPrompt(t *testing.T) {
 			t.Errorf("Error on convert JSON Prompt\nErr -> %v", err)
 		}
 
-		result, err := ConvertToJSON(p)
+		result, err := p.ConvertToJSON(prompt)
 
 		if err != nil {
 			t.Errorf("Error on convert JSON Prompt\nErr -> %v", err)
 		}
 
-		expectedObj := PromptJSON{
+		expectedObj := p.PromptJSON{
 			Introduction: introduction,
 			Rules:        rule,
 			Structure:    structure,
@@ -67,7 +59,7 @@ func TestPrompt(t *testing.T) {
 			"Test 2",
 		}
 
-		result := convertStringArrayPromptToString(testArr)
+		result := p.ConvertStringArrayPromptToString(testArr)
 		expect := `- Test 1
 - Test 2`
 
@@ -77,12 +69,11 @@ func TestPrompt(t *testing.T) {
 	})
 
 	t.Run("[ConvertToPromptString] Should create only one prompt string", func(t *testing.T) {
-		p, err := NewCustomPrompt(CustomPromptDTO{
+		prompt, err := p.NewCustomPrompt(p.CustomPromptDTO{
 			Introduction: introduction,
 			Structure:    structure,
 			Rules:        rule,
 			Examples:     example,
-			NewReader:    reader,
 			IsModify:     false,
 		})
 
@@ -90,9 +81,9 @@ func TestPrompt(t *testing.T) {
 			t.Error(err)
 		}
 
-		result := ConvertToPromptString(p)
+		result := p.ConvertToPromptString(prompt)
 		fmt.Print(result)
-		expect := fmt.Sprintf("Introduction:\n%s\nRules:\n%s\nStrucute:%s\nExamples:\n%s", introduction, convertStringArrayPromptToString(rule), structure, convertStringArrayPromptToString(example))
+		expect := fmt.Sprintf("Introduction:\n%s\nRules:\n%s\nStrucute:%s\nExamples:\n%s", introduction, p.ConvertStringArrayPromptToString(rule), structure, p.ConvertStringArrayPromptToString(example))
 
 		if result != expect {
 			t.Errorf("Receive -> %s\nExpected -> %s", result, expect)
@@ -101,47 +92,29 @@ func TestPrompt(t *testing.T) {
 	})
 
 	t.Run("[NewMenuPromptOptions] should return DEFAULT optiont", func(t *testing.T) {
-		stub := &stubMenu{
-			DisplayFn: func() (*providers.MenuReturnOption, error) {
-				return &providers.MenuReturnOption{
-					Position: 0,
-					Result:   "DEFAULT",
-				}, nil
-			},
-		}
-		r, err := NewMenuPromptOptions(stub)
+		stub := mocks.NewStubMenuSelector()
+		stub.Choices = append(stub.Choices, 0)
+
+		r, err := p.NewMenuPromptOptions(stub)
 
 		if err != nil {
 			t.Errorf("Error on select Default Option -> %v ", err)
 		}
 
-		if r != PromptType("DEFAULT") {
+		if r != p.PromptType("DEFAULT") {
 			t.Fatalf("expected DEFAULT, got %s", r)
 		}
 	})
 
 	t.Run("[NewMenuPromptOptions] Should return ERROR", func(t *testing.T) {
-		mock := &stubMenu{
-			DisplayFn: func() (*providers.MenuReturnOption, error) {
-				return nil, errors.New("some error")
-			},
-		}
+		stub := mocks.NewStubMenuSelector()
+		stub.Choices = append(stub.Choices, 3)
 
-		_, err := NewMenuPromptOptions(mock)
+		_, err := p.NewMenuPromptOptions(stub)
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
 		}
 	})
 
-}
-
-type stubMenu struct {
-	DisplayFn func() (*providers.MenuReturnOption, error)
-}
-
-func (m *stubMenu) AddItem(label, value string) {}
-
-func (m *stubMenu) Display() (*providers.MenuReturnOption, error) {
-	return m.DisplayFn()
 }
