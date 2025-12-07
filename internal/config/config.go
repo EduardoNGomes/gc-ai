@@ -8,23 +8,24 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/chzyer/readline"
 	"github.com/eduardongomes/gcai/errs"
-	linereader "github.com/eduardongomes/gcai/internal/line-reader"
+	m "github.com/eduardongomes/gcai/internal/menu"
 	"github.com/eduardongomes/gcai/internal/prompt"
 	"github.com/eduardongomes/gcai/internal/providers"
 )
 
 type Config struct {
-	open_ai_key         string
-	gemini_key          string
-	configPath          string
-	allow_edit          bool
-	agent               providers.Provider
-	promptType          prompt.PromptType
-	prompt              prompt.Prompt
-	menuPromptSelector  MenuPromptSelector
-	customPromptFactory CustomPromptFactory
+	open_ai_key  string
+	gemini_key   string
+	configPath   string
+	allow_edit   bool
+	agent        providers.Provider
+	promptType   prompt.PromptType
+	prompt       prompt.Prompt
+	menuSelector m.MenuSelector
+	menuConfirm  m.MenuConfirm
+	menuWriter   m.MenuWriter
+	menuEditable m.MenuEditable
 }
 
 type RewriteConfigOptions struct {
@@ -71,8 +72,10 @@ type ConfigMethods interface {
 
 func NewConfig() *Config {
 	return &Config{
-		menuPromptSelector:  ProdMenuSelector{},
-		customPromptFactory: ProdCustomPromptFactory{},
+		menuSelector: m.NewProdMenuSelector(),
+		menuConfirm:  m.NewProdMenuConfirm(),
+		menuWriter:   m.NewProdMenuWriter(),
+		menuEditable: m.NewProdMenuEditable(),
 	}
 }
 
@@ -221,11 +224,10 @@ func (c *Config) LoadEnvs(configPath string) error {
 				Structure:    e.CustomPrompt.Structure,
 				Rules:        e.CustomPrompt.Rules,
 				Examples:     e.CustomPrompt.Examples,
-				NewReader: func() (linereader.LineReader, error) {
-					return readline.New("")
-				},
-				OutputWriter: os.Stdout,
-				MenuAction:   prompt.NewMenuAction(),
+				MenuSelector: c.menuSelector,
+				MenuConfirm:  c.menuConfirm,
+				MenuWriter:   c.menuWriter,
+				MenuEditable: c.menuEditable,
 				IsModify:     false,
 			})
 
@@ -286,8 +288,13 @@ func (c *Config) Config(reader io.Reader, agentOptions providers.AgentOptions, o
 }
 
 func (c *Config) ConfigPrompt() (prompt.Prompt, error) {
-	menu := c.menuPromptSelector
-	choice, err := menu.SelectPromptType()
+
+	options := []string{
+		string(prompt.CUSTOM),
+		string(prompt.DEFAULT),
+	}
+
+	choice, err := c.menuSelector.Run("Select your prompt type", options)
 
 	if err != nil {
 		return nil, err
@@ -295,8 +302,8 @@ func (c *Config) ConfigPrompt() (prompt.Prompt, error) {
 
 	p := c.GetPrompt()
 
-	switch choice {
-	case prompt.CUSTOM:
+	switch choice.Result {
+	case string(prompt.CUSTOM):
 		{
 			c.setPromptType(prompt.CUSTOM)
 
@@ -325,15 +332,14 @@ func (c *Config) ConfigPrompt() (prompt.Prompt, error) {
 					}
 					return p.GetExamples()
 				}(),
-				NewReader: func() (linereader.LineReader, error) {
-					return readline.New("")
-				},
-				OutputWriter: os.Stdout,
-				MenuAction:   prompt.NewMenuAction(),
+				MenuSelector: c.menuSelector,
+				MenuConfirm:  c.menuConfirm,
+				MenuWriter:   c.menuWriter,
+				MenuEditable: c.menuEditable,
 				IsModify:     true,
 			}
 
-			newPrompt, err := c.customPromptFactory.New(dto)
+			newPrompt, err := prompt.NewCustomPrompt(dto)
 
 			if err != nil {
 				return nil, err
@@ -342,7 +348,7 @@ func (c *Config) ConfigPrompt() (prompt.Prompt, error) {
 			return newPrompt, nil
 		}
 
-	case prompt.DEFAULT:
+	case string(prompt.DEFAULT):
 	default:
 		{
 
@@ -383,7 +389,11 @@ func (c *Config) configAllowEdit(reader io.Reader, outputWriter io.Writer) {
 func (c *Config) configAgent(reader io.Reader, agentOptions providers.AgentOptions, outputWriter io.Writer) error {
 
 	var userInputOpenAi, userInputGemini string
-	agentSelected := agentOptions.SelectedOption()
+	agentSelected, err := agentOptions.SelectedOption()
+
+	if err != nil {
+		return err
+	}
 
 	switch agentSelected {
 	case providers.OPEN_AI:
@@ -432,10 +442,6 @@ type writeConfigDTO struct {
 func configDTO(file *os.File, c *Config) *writeConfigDTO {
 	p := c.GetPrompt()
 
-	if p == nil {
-		p = prompt.NewDefaultPrompt()
-	}
-
 	return &writeConfigDTO{
 		file:       file,
 		gemini:     c.GetGeminiKey(),
@@ -444,10 +450,30 @@ func configDTO(file *os.File, c *Config) *writeConfigDTO {
 		agent:      c.GetAgent(),
 		promptType: c.GetPromptType(),
 		customPrompt: prompt.CustomPromptJSON{
-			Introduction: p.GetIntroduction(),
-			Structure:    p.GetStructure(),
-			Examples:     p.GetExamples(),
-			Rules:        p.GetRules(),
+			Introduction: func() string {
+				if p == nil {
+					return ""
+				}
+				return p.GetIntroduction()
+			}(),
+			Structure: func() string {
+				if p == nil {
+					return ""
+				}
+				return p.GetStructure()
+			}(),
+			Rules: func() []string {
+				if p == nil {
+					return []string{}
+				}
+				return p.GetRules()
+			}(),
+			Examples: func() []string {
+				if p == nil {
+					return []string{}
+				}
+				return p.GetExamples()
+			}(),
 		},
 	}
 }
