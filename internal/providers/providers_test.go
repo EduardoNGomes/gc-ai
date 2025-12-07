@@ -32,7 +32,11 @@ func TestProviders(t *testing.T) {
 
 		agentSelected.SetAgent(OPEN_AI)
 
-		option := agentSelected.SelectedOption()
+		option, err := agentSelected.SelectedOption()
+
+		if err != nil {
+			t.Errorf("Expected nil, receive %v", err)
+		}
 
 		if option != OPEN_AI {
 			t.Errorf("Expect %s, Receive %s", string(OPEN_AI), string(option))
