@@ -6,18 +6,18 @@ import (
 	"github.com/eduardongomes/gcai/internal/mocks"
 )
 
-func TestMenuDisplay(t *testing.T) {
-	t.Run("[MenuDisplay] Should return right value", func(t *testing.T) {
-		menuDisplay := mocks.NewStubMenuDisplay()
+func TestMenuSelector(t *testing.T) {
+	t.Run("[MenuSelector] Should return right value", func(t *testing.T) {
+		menuSelector := mocks.NewStubMenuSelector()
 		items := []string{
 			"test 1",
 			"test 2",
 			"test 3",
 			"test 4",
 		}
-		menuDisplay.Cursor = 1
+		menuSelector.Cursor = 1
 
-		result, err := menuDisplay.Run("test label", items)
+		result, err := menuSelector.Run("test label", items)
 
 		if err != nil {
 			t.Errorf("Expect nil, receive %v", err)
@@ -29,14 +29,14 @@ func TestMenuDisplay(t *testing.T) {
 
 	})
 
-	t.Run("[MenuDisplay] Should return err", func(t *testing.T) {
-		menuDisplay := mocks.NewStubMenuDisplay()
+	t.Run("[MenuSelector] Should return err", func(t *testing.T) {
+		menuSelector := mocks.NewStubMenuSelector()
 		items := []string{
 			"test 1",
 		}
-		menuDisplay.Cursor = 1
+		menuSelector.Cursor = 1
 
-		result, err := menuDisplay.Run("test label", items)
+		result, err := menuSelector.Run("test label", items)
 
 		if err == nil {
 			t.Errorf("Expect nil, receive %v", result)
