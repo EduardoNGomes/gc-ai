@@ -9,7 +9,7 @@ import (
 func TestMenuConfirm(t *testing.T) {
 	t.Run("[MenuConfirm] Should return nil", func(t *testing.T) {
 		menuConfirm := mocks.NewStubMenuConfirm()
-		menuConfirm.Value = true
+		menuConfirm.Values = append(menuConfirm.Values, true)
 
 		if err := menuConfirm.Run("test label"); err != nil {
 			t.Errorf("Expect nil, receive %v", err)
@@ -19,7 +19,7 @@ func TestMenuConfirm(t *testing.T) {
 
 	t.Run("[MenuConfirm] Should return err", func(t *testing.T) {
 		menuConfirm := mocks.NewStubMenuConfirm()
-		menuConfirm.Value = false
+		menuConfirm.Values = append(menuConfirm.Values, false)
 
 		if err := menuConfirm.Run("test label"); err == nil {
 			t.Errorf("Expect nil, receive %v", err)

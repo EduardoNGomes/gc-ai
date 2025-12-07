@@ -3,12 +3,14 @@ package mocks
 import "errors"
 
 type StubMenuConfirm struct {
-	Value bool
+	Values []bool
+	cursor int
 }
 
 func (m *StubMenuConfirm) Run(label string) error {
-
-	if m.Value {
+	m.cursor = 0
+	if m.Values[m.cursor] {
+		m.cursor++
 		return nil
 	}
 
