@@ -2,11 +2,9 @@ package prompt
 
 import (
 	"fmt"
-	"io"
 	"slices"
 	"strings"
 
-	linereader "github.com/eduardongomes/gcai/internal/line-reader"
 	m "github.com/eduardongomes/gcai/internal/menu"
 )
 
@@ -29,8 +27,6 @@ type CustomPromptDTO struct {
 	Structure    string
 	Rules        []string
 	Examples     []string
-	NewReader    func() (linereader.LineReader, error)
-	OutputWriter io.Writer
 	MenuSelector m.MenuSelector
 	MenuConfirm  m.MenuConfirm
 	MenuWriter   m.MenuWriter
@@ -64,21 +60,13 @@ func NewCustomPrompt(v CustomPromptDTO) (Prompt, error) {
 		}, nil
 	}
 
-	rl, err := v.NewReader()
-
-	if err != nil {
-		return nil, fmt.Errorf("error creating reader: %v", err)
-	}
-
-	defer rl.Close()
-
-	introduction, err := v.editSTROption(rl, "Introduction", v.Introduction)
+	introduction, err := v.editSTROption("Introduction", v.Introduction)
 
 	if err != nil {
 		return nil, err
 	}
 
-	structure, err := v.editSTROption(rl, "Structure", v.Structure)
+	structure, err := v.editSTROption("Structure", v.Structure)
 
 	if err != nil {
 		return nil, err
@@ -104,22 +92,17 @@ func NewCustomPrompt(v CustomPromptDTO) (Prompt, error) {
 	}, nil
 }
 
-func (c *CustomPromptDTO) editSTROption(rl linereader.LineReader, name, value string) (string, error) {
+func (c *CustomPromptDTO) editSTROption(name, value string) (string, error) {
 
-	m := fmt.Sprintf("Write your prompt %s or press ENTER to keep it unchanged:", name)
+	msg := fmt.Sprintf("Write your prompt %s or press ENTER to keep it unchanged:", name)
 
-	fmt.Println(m)
-
-	oldValue := value
-
-	rl.WriteStdin([]byte(oldValue))
-	newValue, err := rl.Readline()
+	line, err := c.MenuEditable.Run(msg, value)
 
 	if err != nil {
-		return oldValue, fmt.Errorf("error reading line: %v", err)
+		return "", err
 	}
 
-	return newValue, nil
+	return line, nil
 }
 
 func (c *CustomPromptDTO) editArrOption(arr []string, name string) ([]string, error) {
