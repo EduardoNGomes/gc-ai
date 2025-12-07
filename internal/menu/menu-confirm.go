@@ -20,6 +20,7 @@ func (m *ProdMenuConfirm) Run(label string) error {
 		return err
 	}
 	return nil
+
 }
 
 func NewProdMenuConfirm() *ProdMenuConfirm {
