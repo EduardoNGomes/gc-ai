@@ -8,14 +8,19 @@ type StubMenuConfirm struct {
 }
 
 func (m *StubMenuConfirm) Run(label string) error {
-	m.cursor = 0
-	if m.Values[m.cursor] {
-		m.cursor++
+
+	if m.cursor >= len(m.Values) {
+		return errors.New("Not enough stub values provided")
+	}
+
+	result := m.Values[m.cursor]
+	m.cursor++
+
+	if result {
 		return nil
 	}
 
 	return errors.New("Canceled")
-
 }
 
 func NewStubMenuConfirm() *StubMenuConfirm {
