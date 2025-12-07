@@ -7,8 +7,9 @@ import (
 )
 
 type StubMenuSelector struct {
-	Cursor int
-	Items  []menu.MenuSelectorReturnOption
+	Choices []int
+	cursor  int
+	Items   []menu.MenuSelectorReturnOption
 }
 
 func (m *StubMenuSelector) Run(label string, items []string) (*menu.MenuSelectorReturnOption, error) {
@@ -16,11 +17,20 @@ func (m *StubMenuSelector) Run(label string, items []string) (*menu.MenuSelector
 		m.Items = append(m.Items, menu.MenuSelectorReturnOption{Position: i, Result: v})
 	}
 
-	if len(m.Items) < m.Cursor+1 {
+	if len(m.Items) < m.cursor+1 {
 		return nil, errors.New("Invalid value entry")
 	}
 
-	return &m.Items[m.Cursor], nil
+	position := m.Choices[m.cursor]
+
+	if len(m.Items) < position+1 {
+		return nil, errors.New("Invalid value entry")
+	}
+
+	result := &m.Items[position]
+
+	m.cursor++
+	return result, nil
 
 }
 

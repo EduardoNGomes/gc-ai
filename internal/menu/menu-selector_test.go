@@ -15,7 +15,7 @@ func TestMenuSelector(t *testing.T) {
 			"test 3",
 			"test 4",
 		}
-		menuSelector.Cursor = 1
+		menuSelector.Choices = append(menuSelector.Choices, 1)
 
 		result, err := menuSelector.Run("test label", items)
 
@@ -34,7 +34,7 @@ func TestMenuSelector(t *testing.T) {
 		items := []string{
 			"test 1",
 		}
-		menuSelector.Cursor = 1
+		menuSelector.Choices = append(menuSelector.Choices, 1)
 
 		result, err := menuSelector.Run("test label", items)
 
