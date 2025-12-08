@@ -7,14 +7,13 @@ import (
 
 	"github.com/eduardongomes/gcai/errs"
 	c "github.com/eduardongomes/gcai/internal/config"
-	l "github.com/eduardongomes/gcai/internal/line-reader"
+	"github.com/eduardongomes/gcai/internal/mocks"
 )
 
 func TestGeminiAgent(t *testing.T) {
 	t.Run("[GetDiff]should return erro if not has diff", func(t *testing.T) {
-		agent := NewGeminiAgent()
 
-		_, err := agent.GetDiff()
+		_, err := GetDiff()
 
 		if !errors.Is(err, errs.EmptyDiffError) {
 			t.Errorf("Should not work without diff %v", err)
@@ -22,15 +21,13 @@ func TestGeminiAgent(t *testing.T) {
 	})
 
 	t.Run("[GetDiff]should return err on get diff", func(t *testing.T) {
-		agent := NewGeminiAgent()
-
 		execCommand = func(name string, args ...string) *exec.Cmd {
 			return exec.Command("false")
 		}
 
 		defer func() { execCommand = exec.Command }()
 
-		_, err := agent.GetDiff()
+		_, err := GetDiff()
 
 		if err == nil {
 			t.Error("[Diff]Expect error receive nil")
@@ -38,15 +35,13 @@ func TestGeminiAgent(t *testing.T) {
 	})
 
 	t.Run("[GetDiff] Should not get error on get diff", func(t *testing.T) {
-		agent := NewGeminiAgent()
-
 		execCommand = func(name string, args ...string) *exec.Cmd {
 			return exec.Command("echo", "fake-diff-success")
 		}
 
 		defer func() { execCommand = exec.Command }()
 
-		_, err := agent.GetDiff()
+		_, err := GetDiff()
 
 		if err != nil {
 			t.Errorf("Error on get diff %v", err)
@@ -73,30 +68,26 @@ func TestGeminiAgent(t *testing.T) {
 	})
 
 	t.Run("[MakeCommit] Should  get error on try make commit", func(t *testing.T) {
-		agent := NewGeminiAgent()
-
 		execCommand = func(name string, args ...string) *exec.Cmd {
 			return exec.Command("false")
 		}
 
 		defer func() { execCommand = exec.Command }()
 
-		err := agent.MakeCommit("fake diff")
+		err := MakeCommit("fake diff")
 		if err == nil {
 			t.Error("[MakeCommit] -> Expect error receive nil")
 		}
 	})
 
 	t.Run("[MakeCommit] Should not get error on try make commit", func(t *testing.T) {
-		agent := NewGeminiAgent()
-
 		execCommand = func(name string, args ...string) *exec.Cmd {
 			return exec.Command("echo", "fake-commit-success")
 		}
 
 		defer func() { execCommand = exec.Command }()
 
-		err := agent.MakeCommit("fake diff")
+		err := MakeCommit("fake diff")
 
 		if err != nil {
 			t.Errorf("Error on make commit %v", err)
@@ -105,20 +96,15 @@ func TestGeminiAgent(t *testing.T) {
 	})
 
 	t.Run("[Edit] Should edit commit", func(t *testing.T) {
-		mock := l.NewMockReader()
-		agent := &GeminiAgent{
-			newReader: func() (l.LineReader, error) {
-				return mock, nil
-			},
-		}
-
-		out, err := agent.Edit("hello world")
+		stub := mocks.NewStubMenuEditable()
+		expected := "hello world (edited)"
+		stub.Value = expected
+		out, err := Edit(stub, "hello world")
 
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		expected := "hello world (edited)"
 		if out != expected {
 			t.Errorf("expected %q, got %q", expected, out)
 		}
