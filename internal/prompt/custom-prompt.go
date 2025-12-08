@@ -19,7 +19,7 @@ type CustomPromptJSON struct {
 	Introduction string   `json:"introduction"`
 	Structure    string   `json:"structure"`
 	Examples     []string `json:"exemples"`
-	Rules        []string `json:"Rules"`
+	Rules        []string `json:"rules"`
 }
 
 type CustomPromptDTO struct {
