@@ -55,8 +55,7 @@ func (cli *CLI) Run(f f.Flags, c config.ConfigMethods, reader io.Reader) {
 		log.Fatal(err)
 	}
 
-	menu := providers.NewShellMenu("Choose your agent")
-	agentsOptions := providers.NewSelectAgent(menu)
+	agentsOptions := providers.NewSelectAgent()
 
 	if c.IsEmpty() || f.OpenConfig {
 		if err := c.Config(reader, agentsOptions, os.Stdout); err != nil {
