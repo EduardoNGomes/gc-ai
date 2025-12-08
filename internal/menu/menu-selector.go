@@ -1,8 +1,6 @@
 package menu
 
-import (
-	"github.com/manifoldco/promptui"
-)
+import "github.com/charmbracelet/huh"
 
 type MenuSelectorReturnOption struct {
 	Position int
@@ -16,20 +14,35 @@ type MenuSelector interface {
 type ProdMenuSelector struct{}
 
 func (m *ProdMenuSelector) Run(label string, items []string) (*MenuSelectorReturnOption, error) {
-	prompt := promptui.Select{
-		HideHelp: true,
-		Label:    label,
-		Items:    items,
-		Size:     6,
+	var result string
+
+	options := make([]huh.Option[string], len(items))
+	for i, v := range items {
+		options[i] = huh.NewOption(v, v)
 	}
 
-	i, result, err := prompt.Run()
+	err := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Title(label).
+				Options(options...).
+				Value(&result),
+		),
+	).Run()
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &MenuSelectorReturnOption{Position: i, Result: result}, nil
+	position := -1
+	for i, v := range items {
+		if v == result {
+			position = i
+			break
+		}
+	}
+
+	return &MenuSelectorReturnOption{Position: position, Result: result}, nil
 
 }
 

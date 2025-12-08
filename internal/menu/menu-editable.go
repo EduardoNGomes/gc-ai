@@ -1,7 +1,7 @@
 package menu
 
 import (
-	"github.com/manifoldco/promptui"
+	"github.com/charmbracelet/huh"
 )
 
 type MenuEditable interface {
@@ -11,18 +11,23 @@ type MenuEditable interface {
 type ProdMenuEditable struct{}
 
 func (m *ProdMenuEditable) Run(label, defaultValue string) (string, error) {
-	promptConfirm := promptui.Prompt{
-		Label:     label,
-		Default:   defaultValue,
-		AllowEdit: true,
-	}
+	var newValue string = defaultValue
 
-	line, err := promptConfirm.Run()
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewText().
+				Title(label).
+				Value(&newValue).
+				Lines(5),
+		),
+	)
+
+	err := form.Run()
 	if err != nil {
 		return "", err
 	}
 
-	return line, nil
+	return newValue, nil
 }
 
 func NewProdMenuEditable() *ProdMenuEditable {

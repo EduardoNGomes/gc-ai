@@ -1,7 +1,9 @@
 package menu
 
 import (
-	"github.com/manifoldco/promptui"
+	"errors"
+
+	"github.com/charmbracelet/huh"
 )
 
 type MenuConfirm interface {
@@ -11,16 +13,27 @@ type MenuConfirm interface {
 type ProdMenuConfirm struct{}
 
 func (m *ProdMenuConfirm) Run(label string) error {
-	promptConfirm := promptui.Prompt{
-		Label:     label,
-		IsConfirm: true,
-	}
 
-	if _, err := promptConfirm.Run(); err != nil {
+	var confirmed bool
+
+	err := huh.NewForm(
+		huh.NewGroup(
+			huh.NewConfirm().
+				Title(label).
+				Affirmative("Yes").
+				Negative("No").
+				Value(&confirmed),
+		),
+	).Run()
+
+	if err != nil {
 		return err
 	}
-	return nil
 
+	if !confirmed {
+		return errors.New("canceled")
+	}
+	return nil
 }
 
 func NewProdMenuConfirm() *ProdMenuConfirm {

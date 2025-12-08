@@ -1,6 +1,6 @@
 package menu
 
-import "github.com/manifoldco/promptui"
+import "github.com/charmbracelet/huh"
 
 type MenuWriter interface {
 	Run(label string) (string, error)
@@ -9,10 +9,15 @@ type MenuWriter interface {
 type ProdMenuWriter struct{}
 
 func (m *ProdMenuWriter) Run(label string) (string, error) {
-	prompt := promptui.Prompt{
-		Label: label,
-	}
-	line, err := prompt.Run()
+	var line string
+
+	err := huh.NewForm(
+		huh.NewGroup(
+			huh.NewInput().
+				Title(label).
+				Value(&line),
+		),
+	).Run()
 
 	if err != nil {
 		return "", err
