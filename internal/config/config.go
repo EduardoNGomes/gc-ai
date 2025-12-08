@@ -209,7 +209,7 @@ func (c *Config) LoadEnvs(configPath string) error {
 	c.setGeminiKey(e.GeminiKey)
 	c.setAllowEdit(e.AllowEdit)
 	c.setAgent(e.Agent)
-	c.setPromptType(prompt.DEFAULT)
+	c.setPromptType(e.PromptType)
 
 	switch c.GetPromptType() {
 
