@@ -69,14 +69,6 @@ func (cli *CLI) Run(f f.Flags, c config.ConfigMethods, reader io.Reader) {
 	}
 
 	if f.AlterEditConfig != nil {
-
-		c.RewriteConfig(config.RewriteConfigOptions{
-			PromptType: nil,
-			Prompt:     nil,
-			AllowEdit:  nil,
-			Agent:      nil,
-		})
-
 		if err := c.RewriteConfig(config.RewriteConfigOptions{
 			PromptType: nil,
 			Prompt:     nil,
