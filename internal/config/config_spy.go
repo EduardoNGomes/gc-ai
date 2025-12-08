@@ -50,7 +50,7 @@ func (c *ConfigSpy) GetOpenAIKey() string {
 	return c.openAIKey
 }
 
-func (c *ConfigSpy) SetOpenAiKey(i string) {
+func (c *ConfigSpy) SetOpenAIKey(i string) {
 	c.openAIKey = i
 }
 

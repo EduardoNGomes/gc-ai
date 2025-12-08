@@ -439,7 +439,7 @@ type writeConfigDTO struct {
 	customPrompt prompt.CustomPromptJSON
 }
 
-func configDTO(file *os.File, c *Config) *writeConfigDTO {
+func configDTO(file *os.File, c ConfigMethods) *writeConfigDTO {
 	p := c.GetPrompt()
 
 	return &writeConfigDTO{
