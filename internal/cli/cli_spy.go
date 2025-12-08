@@ -3,7 +3,6 @@ package cli
 import (
 	"io"
 	"log"
-	"os"
 
 	c "github.com/eduardongomes/gcai/internal/config"
 	f "github.com/eduardongomes/gcai/internal/flags"
@@ -22,7 +21,7 @@ func (cli *CLISpy) Run(f f.Flags, config c.ConfigMethods, reader io.Reader) {
 
 	agents := providers.NewSelectAgentSpy()
 	if config.IsEmpty() || f.OpenConfig {
-		config.Config(reader, agents, os.Stdout)
+		config.Config(agents)
 	}
 
 }

@@ -1,8 +1,6 @@
 package config
 
 import (
-	"io"
-
 	"github.com/eduardongomes/gcai/internal/prompt"
 	"github.com/eduardongomes/gcai/internal/providers"
 )
@@ -33,7 +31,7 @@ func (c *ConfigSpy) LoadEnvs(path string) error {
 	return nil
 }
 
-func (c *ConfigSpy) Config(io.Reader, providers.AgentOptions, io.Writer) error {
+func (c *ConfigSpy) Config(providers.AgentOptions) error {
 	c.IsConfigKeyCalled = true
 	return nil
 }

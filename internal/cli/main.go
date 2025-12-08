@@ -65,7 +65,7 @@ func (cli *CLI) Run(f f.Flags, c config.ConfigMethods, reader io.Reader) {
 	agentsOptions := providers.NewSelectAgent()
 
 	if c.IsEmpty() || f.OpenConfig {
-		if err := c.Config(reader, agentsOptions, os.Stdout); err != nil {
+		if err := c.Config(agentsOptions); err != nil {
 			log.Fatal(err)
 		}
 	}

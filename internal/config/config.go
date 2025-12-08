@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"slices"
-	"strings"
 
 	"github.com/eduardongomes/gcai/errs"
 	m "github.com/eduardongomes/gcai/internal/menu"
@@ -49,7 +47,7 @@ var e envStruct
 type ConfigMethods interface {
 	LoadEnvs(configPath string) error
 	IsEmpty() bool
-	Config(io.Reader, providers.AgentOptions, io.Writer) error
+	Config(providers.AgentOptions) error
 
 	GetGeminiKey() string
 	GetOpenAIKey() string
@@ -247,7 +245,7 @@ func (c *Config) LoadEnvs(configPath string) error {
 	return nil
 }
 
-func (c *Config) Config(reader io.Reader, agentOptions providers.AgentOptions, outputWriter io.Writer) error {
+func (c *Config) Config(agentOptions providers.AgentOptions) error {
 	fileConfig, err := os.OpenFile(c.configPath, os.O_RDWR, 0)
 
 	if err != nil {
@@ -264,11 +262,11 @@ func (c *Config) Config(reader io.Reader, agentOptions providers.AgentOptions, o
 
 	json.Unmarshal(f, &e)
 
-	if err := c.configAgent(reader, agentOptions, outputWriter); err != nil {
+	if err := c.configAgent(agentOptions); err != nil {
 		return err
 	}
 
-	c.configAllowEdit(reader, outputWriter)
+	c.configAllowEdit()
 
 	promptSelected, err := c.ConfigPrompt()
 
@@ -359,36 +357,18 @@ func (c *Config) ConfigPrompt() (prompt.Prompt, error) {
 	return prompt.NewDefaultPrompt(), nil
 }
 
-func (c *Config) configAllowEdit(reader io.Reader, outputWriter io.Writer) {
+func (c *Config) configAllowEdit() {
 
-	var userInputAllowEdit string
-	options := []string{"y", "Y", "true", "n", "N", "false"}
-
-	for !slices.Contains(options, userInputAllowEdit) {
-
-		fmt.Fprintf(outputWriter, "Enable edit before make commit? %s ", "(y/n)")
-		fmt.Fscanf(reader, "%s\n", &userInputAllowEdit)
-
-		switch strings.ToLower(userInputAllowEdit) {
-		case "y", "true":
-			{
-				c.setAllowEdit(true)
-			}
-		case "n", "false":
-			{
-				c.setAllowEdit(false)
-			}
-		default:
-			{
-				fmt.Fprintln(outputWriter, errs.InvalidEntryValue)
-			}
-		}
+	if err := c.menuConfirm.Run("Enable edit before make commit?"); err != nil {
+		c.setAllowEdit(false)
 	}
+
+	c.setAllowEdit(true)
+
 }
 
-func (c *Config) configAgent(reader io.Reader, agentOptions providers.AgentOptions, outputWriter io.Writer) error {
+func (c *Config) configAgent(agentOptions providers.AgentOptions) error {
 
-	var userInputOpenAi, userInputGemini string
 	agentSelected, err := agentOptions.SelectedOption()
 
 	if err != nil {
@@ -398,16 +378,24 @@ func (c *Config) configAgent(reader io.Reader, agentOptions providers.AgentOptio
 	switch agentSelected {
 	case providers.OPEN_AI:
 		{
-			fmt.Fprint(outputWriter, "Write your OpenAI Key: ")
-			fmt.Fscanf(reader, "%s\n", &userInputOpenAi)
-			c.setOpenAIKey(userInputOpenAi)
+			r, err := c.menuWriter.Run("Write your OpenAI Key :")
+
+			if err != nil {
+				return err
+			}
+
+			c.setOpenAIKey(r)
 			c.setAgent(providers.OPEN_AI)
 		}
 	case providers.GEMINI:
 		{
-			fmt.Fprint(outputWriter, "Write your Gemini Key: ")
-			fmt.Fscanf(reader, "%s\n", &userInputGemini)
-			c.setGeminiKey(userInputGemini)
+			r, err := c.menuWriter.Run("Write your Gemini Key :")
+
+			if err != nil {
+				return err
+			}
+
+			c.setGeminiKey(r)
 			c.setAgent(providers.GEMINI)
 		}
 	default:
