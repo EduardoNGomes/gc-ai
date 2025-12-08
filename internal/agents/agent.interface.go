@@ -32,7 +32,7 @@ func GetDiff() (string, error) {
 }
 
 func Edit(menu menu.MenuEditable, msg string) (string, error) {
-	m := fmt.Sprintf("Please edit your commit message or press Enter to keep it unchanged:")
+	m := "Please edit your commit message or press Enter to keep it unchanged:"
 
 	menuEditable := menu
 

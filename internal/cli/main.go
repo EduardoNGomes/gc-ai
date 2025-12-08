@@ -14,12 +14,19 @@ import (
 	"github.com/eduardongomes/gcai/internal/config"
 	c "github.com/eduardongomes/gcai/internal/config"
 	f "github.com/eduardongomes/gcai/internal/flags"
+	"github.com/eduardongomes/gcai/internal/menu"
 	"github.com/eduardongomes/gcai/internal/providers"
 )
+
+type CommitFunc func(msg string) error
+
+type EditFunc func(menu menu.MenuEditable, msg string) (string, error)
 
 type CLI struct {
 	geminiAgent agents.AgentMethods
 	openaiAgent agents.AgentMethods
+	Committer   CommitFunc
+	Editter     EditFunc
 }
 
 type CLIMethdos interface {
@@ -151,13 +158,14 @@ func (cli *CLI) Run(f f.Flags, c config.ConfigMethods, reader io.Reader) {
 	}
 
 	if c.GetAllowEdit() || f.EditCommit {
-		msg, err = agent.Edit(msg)
+		m := menu.NewProdMenuEditable()
+		msg, err = cli.Editter(m, msg)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	if err := agent.MakeCommit(msg); err != nil {
+	if err := cli.Committer(msg); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -169,5 +177,7 @@ func NewCLI(cfg struct {
 	return &CLI{
 		geminiAgent: cfg.Gemini,
 		openaiAgent: cfg.OpenAI,
+		Committer:   agents.MakeCommit,
+		Editter:     agents.Edit,
 	}
 }

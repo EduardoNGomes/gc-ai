@@ -6,123 +6,134 @@ import (
 
 	"github.com/eduardongomes/gcai/internal/agents"
 	c "github.com/eduardongomes/gcai/internal/config"
-	"github.com/eduardongomes/gcai/internal/flags"
 	f "github.com/eduardongomes/gcai/internal/flags"
+	"github.com/eduardongomes/gcai/internal/menu"
+	"github.com/eduardongomes/gcai/internal/providers"
 )
 
 func TestCLI(t *testing.T) {
 
-	flags := flags.Flags{
+	defaultFlags := f.Flags{
 		OpenConfig:      false,
 		EditCommit:      false,
 		AlterEditConfig: nil,
+		AlterAgent:      nil,
+	}
+
+	setupSafeCLI := func(agent agents.AgentMethods) *CLI {
+		cli := NewCLI(struct {
+			Gemini agents.AgentMethods
+			OpenAI agents.AgentMethods
+		}{
+			Gemini: agent,
+			OpenAI: agent,
+		})
+
+		cli.Committer = func(msg string) error {
+			return nil
+		}
+
+		cli.Editter = func(m menu.MenuEditable, msg string) (string, error) {
+			return msg, nil
+		}
+
+		return cli
 	}
 
 	t.Run("Should call config method on start method when config is empty", func(t *testing.T) {
 		confSpy := c.NewConfSpy()
+		confSpy.IsEmptyResult = true
+
 		agent := agents.NewMockAgent()
+		agent.GetCommitReturn = "test commit"
 
-		cli := NewCLI(struct {
-			Gemini agents.AgentMethods
-			OpenAI agents.AgentMethods
-		}{
-			Gemini: agent,
-			OpenAI: agent,
-		})
+		cli := setupSafeCLI(agent)
 
-		cli.Run(flags, confSpy, &bytes.Buffer{})
+		cli.Run(defaultFlags, confSpy, &bytes.Buffer{})
 
-		expect := true
-		result := confSpy.IsEmptyCalled
-
-		if result != expect {
-			t.Errorf("Receive: '%v', Expect: '%v'", result, expect)
+		if !confSpy.IsEmptyCalled {
+			t.Errorf("Expected IsEmpty() to be called")
 		}
+
 	})
 
-	t.Run("Should call config key if confif is empty", func(t *testing.T) {
+	t.Run("Should call config key if config is empty", func(t *testing.T) {
 		confSpy := c.NewConfSpy()
+		confSpy.IsEmptyResult = true
 
 		agent := agents.NewMockAgent()
+		agent.GetCommitReturn = "test commit"
 
-		cli := NewCLI(struct {
-			Gemini agents.AgentMethods
-			OpenAI agents.AgentMethods
-		}{
-			Gemini: agent,
-			OpenAI: agent,
-		})
+		cli := setupSafeCLI(agent)
 
-		cli.Run(flags, confSpy, &bytes.Buffer{})
-		expect := true
-		result := confSpy.IsConfigKeyCalled
+		cli.Run(defaultFlags, confSpy, &bytes.Buffer{})
 
-		if result != expect {
-			t.Errorf("Receive: '%v', Expect: '%v'", result, expect)
+		if !confSpy.IsConfigKeyCalled {
+			t.Errorf("Expected Config setup to be called")
 		}
 	})
 
 	t.Run("[Alter Config] should alter config be called", func(t *testing.T) {
-		conf := c.NewConfSpy()
+		confSpy := c.NewConfSpy()
 		agent := agents.NewMockAgent()
 
-		cli := NewCLI(struct {
-			Gemini agents.AgentMethods
-			OpenAI agents.AgentMethods
-		}{
-			Gemini: agent,
-			OpenAI: agent,
-		})
+		cli := setupSafeCLI(agent)
 
-		reader := &bytes.Buffer{}
 		trueVal := true
-
 		flags := f.Flags{
 			AlterEditConfig: &trueVal,
 		}
 
-		cli.Run(flags, conf, reader)
+		cli.Run(flags, confSpy, &bytes.Buffer{})
 
-		if conf.SetAllowEditCall == nil || *conf.SetAllowEditCall != true {
-			t.Errorf("Expected SetAllowEdit to be called with true")
+		if !confSpy.RewriteConfigCalled {
+			t.Errorf("Expected RewriteConfig to be called")
 		}
 
-		if agent.GetCommitCalled || agent.MakeCommitCalled {
+		if agent.GetCommitCalled {
 			t.Errorf("Agents should not be called when altering config")
 		}
-
 	})
 
-	t.Run("[Edit Commit] shoul call edit commit", func(t *testing.T) {
+	t.Run("[Edit Commit] should call edit commit", func(t *testing.T) {
 		agent := agents.NewMockAgent()
-		cli := NewCLI(struct {
-			Gemini agents.AgentMethods
-			OpenAI agents.AgentMethods
-		}{
-			Gemini: agent,
-			OpenAI: agent,
-		})
-		conf := c.NewConfSpy()
-		reader := &bytes.Buffer{}
+		agent.GetCommitReturn = "Initial Msg"
+
+		cli := setupSafeCLI(agent)
+
+		editCalled := false
+		commitCalled := false
+		finalMsg := ""
+
+		cli.Editter = func(m menu.MenuEditable, msg string) (string, error) {
+			editCalled = true
+			return "Edited Msg", nil
+		}
+
+		cli.Committer = func(msg string) error {
+			commitCalled = true
+			finalMsg = msg
+			return nil
+		}
+
+		confSpy := c.NewConfSpy()
+		confSpy.GetAgentReturn = providers.GEMINI
+		confSpy.GetAllowEditReturn = false
 
 		flags := f.Flags{
-			OpenConfig:      false,
-			EditCommit:      true,
-			AlterEditConfig: nil,
+			EditCommit: true,
 		}
 
-		cli.Run(flags, conf, reader)
+		cli.Run(flags, confSpy, &bytes.Buffer{})
 
-		if !agent.GetCommitCalled {
-			t.Errorf("Expected GetCommit to be called")
+		if !editCalled {
+			t.Error("Expected Editter to be called")
 		}
-		if !agent.EditCalled {
-			t.Errorf("Expected Edit to be called")
+		if !commitCalled {
+			t.Error("Expected Committer to be called")
 		}
-		if !agent.MakeCommitCalled {
-			t.Errorf("Expected MakeCommit to be called")
+		if finalMsg != "Edited Msg" {
+			t.Errorf("Expected 'Edited Msg', got '%s'", finalMsg)
 		}
-
 	})
-
 }

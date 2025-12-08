@@ -8,15 +8,20 @@ import (
 )
 
 type ConfigSpy struct {
-	IsEmptyCalled     bool
-	IsConfigKeyCalled bool
-	geminiKey         string
-	openAIKey         string
-	allow_edit        bool
-	agent             providers.Provider
-	SetAllowEditCall  *bool
-	prompt            prompt.Prompt
-	promptType        prompt.PromptType
+	IsEmptyCalled       bool
+	IsConfigKeyCalled   bool
+	geminiKey           string
+	openAIKey           string
+	allow_edit          bool
+	agent               providers.Provider
+	SetAllowEditCall    *bool
+	prompt              prompt.Prompt
+	promptType          prompt.PromptType
+	RewriteConfigCalled bool
+	ConfigCalled        bool
+	IsEmptyResult       bool
+	GetAgentReturn      providers.Provider
+	GetAllowEditReturn  bool
 }
 
 func (c *ConfigSpy) IsEmpty() bool {
@@ -98,6 +103,7 @@ func (c *ConfigSpy) RewriteConfig(v RewriteConfigOptions) error {
 	if v.Prompt != nil {
 		c.setPrompt(*v.Prompt)
 	}
+	c.RewriteConfigCalled = true
 	return nil
 }
 

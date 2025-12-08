@@ -6,6 +6,7 @@ type MockAgent struct {
 	GetCommitCalled  bool
 	MakeCommitCalled bool
 	EditCalled       bool
+	GetCommitReturn  string
 }
 
 func (agent *MockAgent) GetDiff() (string, error) {
